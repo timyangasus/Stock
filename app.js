@@ -1,12 +1,3 @@
-      <button class="confirm-btn destructive" id="confirm-ok-btn" onclick="confirmOk()">刪除</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========== TOAST ========== -->
-<div class="toast" id="toast"></div>
-
-<script>
 /* =====================================================================
    DATA LAYER
    ===================================================================== */
@@ -1270,6 +1261,3 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-</script>
-</body>
-</html>
