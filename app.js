@@ -1,3 +1,12 @@
+      <button class="confirm-btn destructive" id="confirm-ok-btn" onclick="confirmOk()">刪除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TOAST ========== -->
+<div class="toast" id="toast"></div>
+
+<script>
 /* =====================================================================
    DATA LAYER
    ===================================================================== */
@@ -216,9 +225,7 @@ function renderHome() {
   </span>`;
 
   // Empty state
-  const homeEmpty = document.getElementById('home-empty');
   const hasData = enriched.length > 0;
-  homeEmpty.style.display = hasData ? 'none' : 'block';
 
   if (!hasData) {
     document.getElementById('home-total-value').textContent = '—';
@@ -680,14 +687,6 @@ function openAddModal(editDate = null) {
   const defaultNote = isEdit ? (existing.note || '') : '';
 
   const html = `
-    <div style="padding:0 16px;">
-      <!-- Quick fill buttons -->
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <button class="btn-ghost" style="font-size:14px;padding:10px;" onclick="applyDefaultShares()">套用預設股數</button>
-        ${yesterday ? `<button class="btn-ghost" style="font-size:14px;padding:10px;" onclick="applyYesterdayShares()">套用昨日股數</button>` : ''}
-      </div>
-    </div>
-
     <div class="form-section-header">基本資訊</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
@@ -1271,3 +1270,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+</script>
+</body>
+</html>
