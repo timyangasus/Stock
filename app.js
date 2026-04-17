@@ -735,6 +735,12 @@ function openAddModal(editDate = null) {
   const prevTsmcDisp = prevTsmcPrice != null ? `$${prevTsmcPrice.toLocaleString('zh-TW',{minimumFractionDigits:1,maximumFractionDigits:2})}` : '—';
   const prevEtfDisp  = prevEtfPrice  != null ? `$${prevEtfPrice.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '—';
 
+  // 漲跌初始正負
+  const tsmcSign = editTsmcDelta !== '' ? (parseFloat(editTsmcDelta) >= 0 ? 1 : -1) : 1;
+  const etfSign  = editEtfDelta  !== '' ? (parseFloat(editEtfDelta)  >= 0 ? 1 : -1) : 1;
+  const tsmcAbs  = editTsmcDelta !== '' ? Math.abs(parseFloat(editTsmcDelta)) : '';
+  const etfAbs   = editEtfDelta  !== '' ? Math.abs(parseFloat(editEtfDelta))  : '';
+
   const html = `
     <div class="form-section-header">日期</div>
     <div class="form-group" style="margin:0 16px;">
@@ -750,9 +756,18 @@ function openAddModal(editDate = null) {
         <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
         <span class="form-input" style="color:var(--label-tertiary);">${prevTsmcDisp}</span>
       </div>
-      <div class="form-row">
+      <div class="form-row" style="gap:8px;">
         <span class="form-label">漲跌</span>
-        <input class="form-input" type="number" id="f-tsmc-delta" value="${editTsmcDelta}" placeholder="例：+5 或 -3" inputmode="decimal" step="0.1" oninput="updateModalPreview()">
+        <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;">
+          <button id="tsmc-sign-btn" onclick="toggleSign('tsmc')" style="
+            min-width:40px;height:32px;border-radius:8px;border:none;cursor:pointer;
+            font-size:17px;font-weight:700;font-family:var(--font-system);
+            background:${tsmcSign === 1 ? 'rgba(255,59,48,0.12)' : 'rgba(52,199,89,0.12)'};
+            color:${tsmcSign === 1 ? 'var(--red)' : 'var(--green)'};
+            transition:all 0.15s;
+          ">${tsmcSign === 1 ? '＋' : '－'}</button>
+          <input class="form-input" type="number" id="f-tsmc-delta" value="${tsmcAbs}" placeholder="0" inputmode="decimal" step="0.1" oninput="updateModalPreview()" style="text-align:right;max-width:80px;">
+        </div>
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">今日成交</span>
@@ -766,9 +781,18 @@ function openAddModal(editDate = null) {
         <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
         <span class="form-input" style="color:var(--label-tertiary);">${prevEtfDisp}</span>
       </div>
-      <div class="form-row">
+      <div class="form-row" style="gap:8px;">
         <span class="form-label">漲跌</span>
-        <input class="form-input" type="number" id="f-etf-delta" value="${editEtfDelta}" placeholder="例：+1.5 或 -0.5" inputmode="decimal" step="0.01" oninput="updateModalPreview()">
+        <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;">
+          <button id="etf-sign-btn" onclick="toggleSign('etf')" style="
+            min-width:40px;height:32px;border-radius:8px;border:none;cursor:pointer;
+            font-size:17px;font-weight:700;font-family:var(--font-system);
+            background:${etfSign === 1 ? 'rgba(255,59,48,0.12)' : 'rgba(52,199,89,0.12)'};
+            color:${etfSign === 1 ? 'var(--red)' : 'var(--green)'};
+            transition:all 0.15s;
+          ">${etfSign === 1 ? '＋' : '－'}</button>
+          <input class="form-input" type="number" id="f-etf-delta" value="${etfAbs}" placeholder="0" inputmode="decimal" step="0.01" oninput="updateModalPreview()" style="text-align:right;max-width:80px;">
+        </div>
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">今日成交</span>
@@ -807,6 +831,22 @@ function openAddModal(editDate = null) {
   if (isEdit) updateModalPreview();
 }
 
+function toggleSign(id) {
+  const btn = document.getElementById(id + '-sign-btn');
+  const isPositive = btn.textContent.trim() === '＋';
+  btn.textContent = isPositive ? '－' : '＋';
+  btn.style.background = isPositive ? 'rgba(52,199,89,0.12)' : 'rgba(255,59,48,0.12)';
+  btn.style.color = isPositive ? 'var(--green)' : 'var(--red)';
+  updateModalPreview();
+}
+
+function getSignedDelta(id) {
+  const btn = document.getElementById(id + '-sign-btn');
+  const sign = (btn && btn.textContent.trim() === '＋') ? 1 : -1;
+  const abs = parseFloat(document.getElementById('f-' + id + '-delta').value) || 0;
+  return sign * abs;
+}
+
 function updateModalPreview() {
   const body = document.getElementById('modal-body');
   const prevTsmc   = parseFloat(body.dataset.prevTsmc) || 0;
@@ -814,8 +854,8 @@ function updateModalPreview() {
   const tsmcShares = parseFloat(body.dataset.tsmcShares) || 0;
   const etfShares  = parseFloat(body.dataset.etfShares)  || 0;
 
-  const tsmcDelta = parseFloat(document.getElementById('f-tsmc-delta').value) || 0;
-  const etfDelta  = parseFloat(document.getElementById('f-etf-delta').value)  || 0;
+  const tsmcDelta = getSignedDelta('tsmc');
+  const etfDelta  = getSignedDelta('etf');
 
   const tsmcPrice = prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta;
   const etfPrice  = prevEtf  ? prevEtf  + etfDelta  : etfDelta;
@@ -851,12 +891,12 @@ function saveRecord() {
   const prevEtf    = parseFloat(body.dataset.prevEtf)  || 0;
   const tsmcShares = parseInt(body.dataset.tsmcShares) || 0;
   const etfShares  = parseInt(body.dataset.etfShares)  || 0;
-  const tsmcDelta  = parseFloat(document.getElementById('f-tsmc-delta').value);
-  const etfDelta   = parseFloat(document.getElementById('f-etf-delta').value);
+  const tsmcDelta  = getSignedDelta('tsmc');
+  const etfDelta   = getSignedDelta('etf');
   const note       = document.getElementById('f-note').value.trim();
 
   if (!date) { showToast('請選擇日期'); return; }
-  if (isNaN(tsmcDelta) || isNaN(etfDelta)) { showToast('請輸入漲跌值'); return; }
+  if (tsmcDelta === 0 && etfDelta === 0 && !prevTsmc && !prevEtf) { showToast('請輸入漲跌值'); return; }
 
   const tsmcPrice = prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta;
   const etfPrice  = prevEtf  ? prevEtf  + etfDelta  : etfDelta;
