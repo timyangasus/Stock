@@ -293,6 +293,18 @@ function renderHome() {
   document.getElementById('stock-0050').innerHTML = buildEditableStockCard(
     'etf', '元大台灣50', '0050', todayRec.etf0050Price, todayRec.etf0050Shares, prevRec ? prevRec.etf0050Price : null, etfCostBasis
   );
+
+  // 歷史最高 / 最低市值
+  if (enriched.length >= 2) {
+    const allMV = enriched.map(r => r.totalMarketValue);
+    const peak   = Math.max(...allMV);
+    const trough = Math.min(...allMV);
+    document.getElementById('home-peak').textContent   = fmtMoney(peak);
+    document.getElementById('home-trough').textContent = fmtMoney(trough);
+    document.getElementById('home-peak-trough').style.display = 'flex';
+  } else {
+    document.getElementById('home-peak-trough').style.display = 'none';
+  }
 }
 
 function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBasis) {
@@ -300,6 +312,10 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
   const diff = prevPrice != null ? (price - prevPrice) * shares : 0;
   const cls = profitClass(diff);
   const costUnrealized = costBasis != null ? value - costBasis : null;
+  const returnRate = costBasis != null && costBasis > 0
+    ? ((value - costBasis) / costBasis * 100).toFixed(2)
+    : null;
+  const returnRateCls = returnRate != null ? profitClass(parseFloat(returnRate)) : '';
   return `
     <div class="stock-header">
       <div>
@@ -334,6 +350,11 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
         <div class="stock-stat-value ${profitClass(costUnrealized)}" id="unrealized-${id}">${fmtProfit(costUnrealized)}</div>
       </div>` : ''}
     </div>
+    ${returnRate != null ? `
+    <div style="border-top:0.5px solid var(--separator);padding-top:10px;margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:11px;color:var(--label-tertiary);">報酬率</span>
+      <span style="font-size:14px;font-weight:700;color:${parseFloat(returnRate) >= 0 ? 'var(--red)' : 'var(--green)'};">${parseFloat(returnRate) >= 0 ? '▲' : '▼'} ${Math.abs(returnRate)}%</span>
+    </div>` : ''}
   `;
 }
 
@@ -516,17 +537,27 @@ function renderHistoryDay(enriched, wrapper) {
   enriched.forEach((rec) => {
     const profitCls = profitClass(rec.dailyProfit);
     html += `
-      <div class="list-row" onclick="showDetail('${rec.date}')">
-        <div class="list-row-content">
-          <div class="list-row-title">${fmtDateFull(rec.date)}</div>
-          <div class="list-row-subtitle">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
+      <div class="swipe-row-wrap" id="wrap-${rec.date}">
+        <div class="swipe-delete-bg" onclick="confirmDelete('${rec.date}')">刪除</div>
+        <div class="swipe-row-inner" id="inner-${rec.date}"
+          onclick="showDetail('${rec.date}')"
+          ontouchstart="swipeStart(event,'${rec.date}')"
+          ontouchmove="swipeMove(event,'${rec.date}')"
+          ontouchend="swipeEnd(event,'${rec.date}')">
+          <div class="list-row" style="border-bottom:none;">
+            <div class="list-row-content">
+              <div class="list-row-title">${fmtDateFull(rec.date)}</div>
+              <div class="list-row-subtitle">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
+            </div>
+            <div class="list-row-right">
+              <div class="list-row-value">${fmtMoney(rec.totalMarketValue)}</div>
+              <span class="profit-badge ${profitCls}" style="font-size:11px;">${fmtProfit(rec.dailyProfit)}</span>
+            </div>
+            <span class="list-row-chevron">›</span>
+          </div>
         </div>
-        <div class="list-row-right">
-          <div class="list-row-value">${fmtMoney(rec.totalMarketValue)}</div>
-          <span class="profit-badge ${profitCls}" style="font-size:11px;">${fmtProfit(rec.dailyProfit)}</span>
-        </div>
-        <span class="list-row-chevron">›</span>
       </div>
+      <div style="height:0.5px;background:var(--separator);margin-left:16px;"></div>
     `;
   });
   html += '</div>';
@@ -877,6 +908,7 @@ function saveRecord() {
   saveRecords(records);
   closeAddModal();
   showToast(editingDate ? '紀錄已更新 ✓' : '紀錄已儲存 ✓');
+  haptic('medium');
 
   // Refresh current tab
   setTimeout(() => {
@@ -909,6 +941,7 @@ function confirmDelete(dateStr) {
     saveRecords(records);
     closeModal('detail-modal');
     showToast('紀錄已刪除');
+    haptic('heavy');
     setTimeout(() => {
       renderHome();
       if (currentTab === 'history') renderHistory();
@@ -932,6 +965,62 @@ function confirmOk() {
   if (confirmCallback) { confirmCallback(); confirmCallback = null; }
 }
 
+function openAddOrEdit() {
+  const today = todayStr();
+  const records = loadRecords();
+  const todayRecord = records.find(r => r.date === today);
+  openAddModal(todayRecord ? today : null);
+}
+
+/* Swipe-to-delete */
+let _swipeStartX = 0;
+let _swipeActive = null;
+
+function swipeStart(e, date) {
+  _swipeStartX = e.touches[0].clientX;
+  _swipeActive = date;
+}
+
+function swipeMove(e, date) {
+  const dx = e.touches[0].clientX - _swipeStartX;
+  const el = document.getElementById('inner-' + date);
+  if (!el) return;
+  if (dx < 0) {
+    const clamped = Math.max(dx, -80);
+    el.style.transform = `translateX(${clamped}px)`;
+    el.style.transition = 'none';
+  } else if (el.classList.contains('swiped')) {
+    const clamped = Math.min(dx - 80, 0);
+    el.style.transform = `translateX(${clamped}px)`;
+    el.style.transition = 'none';
+  }
+}
+
+function swipeEnd(e, date) {
+  const dx = e.changedTouches[0].clientX - _swipeStartX;
+  const el = document.getElementById('inner-' + date);
+  if (!el) return;
+  el.style.transition = '';
+  if (dx < -40) {
+    el.style.transform = 'translateX(-80px)';
+    el.classList.add('swiped');
+    // Close other open rows
+    document.querySelectorAll('.swipe-row-inner.swiped').forEach(other => {
+      if (other.id !== 'inner-' + date) {
+        other.style.transform = '';
+        other.classList.remove('swiped');
+      }
+    });
+  } else if (dx > 20) {
+    el.style.transform = '';
+    el.classList.remove('swiped');
+  } else {
+    // Snap back if not enough swipe
+    el.style.transform = el.classList.contains('swiped') ? 'translateX(-80px)' : '';
+  }
+  _swipeActive = null;
+}
+
 function clearTodayRecord() {
   const today = todayStr();
   const records = loadRecords();
@@ -945,6 +1034,7 @@ function clearTodayRecord() {
     saveRecords(updated);
     renderHome();
     showToast('今日資料已清除');
+    haptic('heavy');
   };
   document.getElementById('confirm-title').textContent = '清除今日資料';
   document.getElementById('confirm-msg').textContent = `確定要清除 ${todayStr()} 的紀錄嗎？`;
@@ -1143,26 +1233,30 @@ function renderLineChart(canvasId, records, valueGetter, color, showLabels = fal
 function renderSettings() {
   const s = loadSettings();
   const html = `
-    <div class="form-section-header">持股設定</div>
+    <div style="padding-top:4px;"></div>
+
+    <!-- 台積電卡片 -->
+    <div class="form-section-header">台積電</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
-        <span class="form-label">台積電股數</span>
+        <span class="form-label">股數</span>
         <input class="form-input" type="number" id="s-tsmc-shares" value="${s.tsmcShares}" inputmode="numeric" onchange="saveSettingField('tsmcShares','s-tsmc-shares')">
       </div>
       <div class="form-row">
-        <span class="form-label">0050 股數</span>
-        <input class="form-input" type="number" id="s-etf-shares" value="${s.etf0050Shares}" inputmode="numeric" onchange="saveSettingField('etf0050Shares','s-etf-shares')">
+        <span class="form-label">成本</span>
+        <input class="form-input" type="number" id="s-tsmc-cost" value="${s.tsmcAvgCost || ''}" placeholder="未設定" inputmode="decimal" step="0.1" onchange="saveSettingField('tsmcAvgCost','s-tsmc-cost')">
       </div>
     </div>
 
-    <div class="form-section-header">成本設定（選填）</div>
+    <!-- 元大台灣50卡片 -->
+    <div class="form-section-header">元大台灣50</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
-        <span class="form-label">台積電成本</span>
-        <input class="form-input" type="number" id="s-tsmc-cost" value="${s.tsmcAvgCost || ''}" placeholder="未設定" inputmode="decimal" step="0.1" onchange="saveSettingField('tsmcAvgCost','s-tsmc-cost')">
+        <span class="form-label">股數</span>
+        <input class="form-input" type="number" id="s-etf-shares" value="${s.etf0050Shares}" inputmode="numeric" onchange="saveSettingField('etf0050Shares','s-etf-shares')">
       </div>
       <div class="form-row">
-        <span class="form-label">0050 成本</span>
+        <span class="form-label">成本</span>
         <input class="form-input" type="number" id="s-etf-cost" value="${s.etf0050AvgCost || ''}" placeholder="未設定" inputmode="decimal" step="0.01" onchange="saveSettingField('etf0050AvgCost','s-etf-cost')">
       </div>
     </div>
@@ -1199,6 +1293,7 @@ function saveSettingField(key, inputId) {
   }
   if (isNaN(n) || n < 0) { showToast('請輸入有效數字'); return; }
   const s = loadSettings(); s[key] = n; saveSettings(s);
+  haptic('light');
   showToast('已儲存 ✓');
 }
 
@@ -1300,6 +1395,13 @@ function closeModal(id) {
 /* =====================================================================
    TOAST
    ===================================================================== */
+
+function haptic(type = 'light') {
+  if (window.navigator && window.navigator.vibrate) {
+    const pattern = type === 'heavy' ? [30] : type === 'medium' ? [15] : [8];
+    window.navigator.vibrate(pattern);
+  }
+}
 
 let toastTimer;
 function showToast(msg) {

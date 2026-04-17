@@ -60,7 +60,7 @@
             <button class="nav-btn" onclick="clearTodayRecord()" style="color:var(--blue);justify-content:center;">
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="m19 8-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>
             </button>
-            <button class="nav-btn" onclick="openAddModal()" style="color:var(--blue);justify-content:center;">
+            <button class="nav-btn" onclick="openAddOrEdit()" style="color:var(--blue);justify-content:center;">
               <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
             </button>
           </div>
@@ -108,6 +108,16 @@
             <div class="metric-label" style="margin-bottom:6px;">總市值</div>
             <div class="metric-value neutral" id="home-total-value">—</div>
             <div id="home-profit-badge" style="margin-top:6px;"></div>
+            <div id="home-peak-trough" style="display:none;border-top:0.5px solid var(--separator);margin-top:12px;padding-top:10px;display:flex;justify-content:space-between;">
+              <div style="text-align:left;">
+                <div style="font-size:11px;color:var(--label-tertiary);">歷史最高</div>
+                <div style="font-size:13px;font-weight:600;color:var(--red);" id="home-peak">—</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:11px;color:var(--label-tertiary);">歷史最低</div>
+                <div style="font-size:13px;font-weight:600;color:var(--green);" id="home-trough">—</div>
+              </div>
+            </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div class="stock-card" id="stock-tsmc"></div>
