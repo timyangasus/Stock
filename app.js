@@ -119,7 +119,10 @@ function weekKey(dateStr) {
   const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   const mon = new Date(d);
   mon.setDate(diff);
-  return mon.toISOString().slice(0, 10);
+  const y = mon.getFullYear();
+  const m = String(mon.getMonth() + 1).padStart(2, '0');
+  const dd = String(mon.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
 }
 
 function monthKey(dateStr) { return dateStr.slice(0, 7); }
@@ -141,7 +144,7 @@ function getFirstRecordOfPeriod(records, date, period) {
   } else if (period === 'year') {
     start = new Date(d.getFullYear(), 0, 1);
   }
-  const startStr = start.toISOString().slice(0, 10);
+  const startStr = `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;
   const before = records.filter(r => r.date < startStr);
   return before.length > 0 ? before[before.length - 1] : null;
 }
@@ -414,7 +417,7 @@ function onPriceInput() {
     } else if (period === 'year') {
       start = new Date(d.getFullYear(), 0, 1);
     }
-    const startStr = start.toISOString().slice(0, 10);
+    const startStr = `${start.getFullYear()}-${String(start.getMonth()+1).padStart(2,'0')}-${String(start.getDate()).padStart(2,'0')}`;
     const before = allRecs.filter(r => r.date < startStr);
     return before.length > 0 ? before[before.length - 1].totalMarketValue : allRecs[0].totalMarketValue;
   }
