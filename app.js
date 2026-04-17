@@ -293,18 +293,6 @@ function renderHome() {
   document.getElementById('stock-0050').innerHTML = buildEditableStockCard(
     'etf', '元大台灣50', '0050', todayRec.etf0050Price, todayRec.etf0050Shares, prevRec ? prevRec.etf0050Price : null, etfCostBasis
   );
-
-  // 歷史最高 / 最低市值
-  if (enriched.length >= 2) {
-    const allMV = enriched.map(r => r.totalMarketValue);
-    const peak   = Math.max(...allMV);
-    const trough = Math.min(...allMV);
-    document.getElementById('home-peak').textContent   = fmtMoney(peak);
-    document.getElementById('home-trough').textContent = fmtMoney(trough);
-    document.getElementById('home-peak-trough').style.display = 'flex';
-  } else {
-    document.getElementById('home-peak-trough').style.display = 'none';
-  }
 }
 
 function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBasis) {
@@ -537,27 +525,17 @@ function renderHistoryDay(enriched, wrapper) {
   enriched.forEach((rec) => {
     const profitCls = profitClass(rec.dailyProfit);
     html += `
-      <div class="swipe-row-wrap" id="wrap-${rec.date}">
-        <div class="swipe-delete-bg" onclick="confirmDelete('${rec.date}')">刪除</div>
-        <div class="swipe-row-inner" id="inner-${rec.date}"
-          onclick="showDetail('${rec.date}')"
-          ontouchstart="swipeStart(event,'${rec.date}')"
-          ontouchmove="swipeMove(event,'${rec.date}')"
-          ontouchend="swipeEnd(event,'${rec.date}')">
-          <div class="list-row" style="border-bottom:none;">
-            <div class="list-row-content">
-              <div class="list-row-title">${fmtDateFull(rec.date)}</div>
-              <div class="list-row-subtitle">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
-            </div>
-            <div class="list-row-right">
-              <div class="list-row-value">${fmtMoney(rec.totalMarketValue)}</div>
-              <span class="profit-badge ${profitCls}" style="font-size:11px;">${fmtProfit(rec.dailyProfit)}</span>
-            </div>
-            <span class="list-row-chevron">›</span>
-          </div>
+      <div class="list-row" onclick="showDetail('${rec.date}')">
+        <div class="list-row-content">
+          <div class="list-row-title">${fmtDateFull(rec.date)}</div>
+          <div class="list-row-subtitle">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
         </div>
+        <div class="list-row-right">
+          <div class="list-row-value">${fmtMoney(rec.totalMarketValue)}</div>
+          <span class="profit-badge ${profitCls}" style="font-size:11px;">${fmtProfit(rec.dailyProfit)}</span>
+        </div>
+        <span class="list-row-chevron">›</span>
       </div>
-      <div style="height:0.5px;background:var(--separator);margin-left:16px;"></div>
     `;
   });
   html += '</div>';
