@@ -239,47 +239,59 @@ function renderHome() {
   }
 
   // Get period profit
-  let periodProfit = 0;
-  if (homePeriod === 'today') periodProfit = latest.dailyProfit;
-  else if (homePeriod === 'week') periodProfit = latest.weeklyProfit;
-  else if (homePeriod === 'month') periodProfit = latest.monthlyProfit;
-  else if (homePeriod === 'year') periodProfit = latest.yearlyProfit;
+  // 今日未記錄：today 顯示空，週/月/年取最新一筆
+  const todayRec = enriched.find(r => r.date === today);
 
-  // Total value
-  document.getElementById('home-total-value').textContent = fmtMoney(latest.totalMarketValue);
-  document.getElementById('home-total-value').className = 'metric-value neutral';
-
-  // Profit badge
-  const badgeClass = profitClass(periodProfit);
-  document.getElementById('home-profit-badge').innerHTML =
-    `<div class="profit-badge ${badgeClass}">${fmtProfit(periodProfit)}</div>`;
+  // Total value — 今日無資料時顯示空
+  if (!todayRec) {
+    document.getElementById('home-total-value').textContent = '—';
+    document.getElementById('home-profit-badge').innerHTML = '';
+  } else {
+    document.getElementById('home-total-value').textContent = fmtMoney(todayRec.totalMarketValue);
+    document.getElementById('home-total-value').className = 'metric-value neutral';
+    const badgeClass = profitClass(todayRec.dailyProfit);
+    document.getElementById('home-profit-badge').innerHTML =
+      `<div class="profit-badge ${badgeClass}">${fmtProfit(todayRec.dailyProfit)}</div>`;
+  }
 
   // 4 metric cards
-  const todayRec = enriched.find(r => r.date === today) || latest;
+  const refRec = todayRec || latest;
   const vals = {
-    today: todayRec.dailyProfit,
-    week: todayRec.weeklyProfit,
-    month: todayRec.monthlyProfit,
-    year: todayRec.yearlyProfit
+    today: todayRec ? todayRec.dailyProfit : null,
+    week: refRec.weeklyProfit,
+    month: refRec.monthlyProfit,
+    year: refRec.yearlyProfit
   };
   ['today','week','month','year'].forEach(p => {
     const el = document.getElementById('val-' + p);
     const v = vals[p];
-    el.innerHTML = fmtProfit(v);
-    const cls = profitClass(v);
-    el.style.color = cls === 'positive' ? 'var(--red)' : cls === 'negative' ? 'var(--green)' : 'var(--label-primary)';
+    if (v == null) {
+      el.innerHTML = '—';
+      el.style.color = '';
+    } else {
+      el.innerHTML = fmtProfit(v);
+      const cls = profitClass(v);
+      el.style.color = cls === 'positive' ? 'var(--red)' : cls === 'negative' ? 'var(--green)' : 'var(--label-primary)';
+    }
   });
+
+  // Stock cards — 今日無資料時顯示空
+  if (!todayRec) {
+    document.getElementById('stock-tsmc').innerHTML = stockCardEmpty('台積電', '2330');
+    document.getElementById('stock-0050').innerHTML = stockCardEmpty('元大台灣50', '0050');
+    return;
+  }
 
   // Stock cards — 顯示可輸入價格版本
   const prevRec = enriched.length > 1 ? enriched[enriched.length - 2] : null;
-  const tsmcCostBasis = settings.tsmcAvgCost > 0 ? settings.tsmcAvgCost * latest.tsmcShares : null;
-  const etfCostBasis = settings.etf0050AvgCost > 0 ? settings.etf0050AvgCost * latest.etf0050Shares : null;
+  const tsmcCostBasis = settings.tsmcAvgCost > 0 ? settings.tsmcAvgCost * todayRec.tsmcShares : null;
+  const etfCostBasis = settings.etf0050AvgCost > 0 ? settings.etf0050AvgCost * todayRec.etf0050Shares : null;
 
   document.getElementById('stock-tsmc').innerHTML = buildEditableStockCard(
-    'tsmc', '台積電', '2330', latest.tsmcPrice, latest.tsmcShares, prevRec ? prevRec.tsmcPrice : null, tsmcCostBasis
+    'tsmc', '台積電', '2330', todayRec.tsmcPrice, todayRec.tsmcShares, prevRec ? prevRec.tsmcPrice : null, tsmcCostBasis
   );
   document.getElementById('stock-0050').innerHTML = buildEditableStockCard(
-    'etf', '元大台灣50', '0050', latest.etf0050Price, latest.etf0050Shares, prevRec ? prevRec.etf0050Price : null, etfCostBasis
+    'etf', '元大台灣50', '0050', todayRec.etf0050Price, todayRec.etf0050Shares, prevRec ? prevRec.etf0050Price : null, etfCostBasis
   );
 }
 
