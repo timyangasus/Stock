@@ -454,6 +454,27 @@ function onPriceInput() {
   const overallCls = profitClass(dailyProfit);
   document.getElementById('home-profit-badge').innerHTML =
     `<div class="profit-badge ${overallCls}">${fmtProfit(dailyProfit)}</div>`;
+
+  // 自動儲存今日價格到紀錄
+  const today = todayStr();
+  let allRecords = loadRecords();
+  const todayIdx = allRecords.findIndex(r => r.date === today);
+  const updatedRecord = {
+    id: today,
+    date: today,
+    tsmcShares: latest.tsmcShares,
+    tsmcPrice,
+    etf0050Shares: latest.etf0050Shares,
+    etf0050Price: etfPrice,
+    totalMarketValue: totalMV,
+    note: todayIdx >= 0 ? (allRecords[todayIdx].note || '') : ''
+  };
+  if (todayIdx >= 0) {
+    allRecords[todayIdx] = updatedRecord;
+  } else {
+    allRecords.push(updatedRecord);
+  }
+  saveRecords(allRecords);
 }
 
 /* =====================================================================
@@ -682,22 +703,32 @@ function openAddModal(editDate = null) {
   const records = sortedRecords();
   const isEdit = !!editDate;
   const existing = isEdit ? records.find(r => r.date === editDate) : null;
+  const today = todayStr();
 
   document.getElementById('modal-title').textContent = isEdit ? '編輯紀錄' : '新增紀錄';
 
-  // Yesterday's data
-  const yesterday = records.length > 0 ? records[records.length - (isEdit ? 2 : 1)] : null;
+  // 昨日資料
+  const prevRecords = isEdit
+    ? records.filter(r => r.date < editDate)
+    : records.filter(r => r.date < today);
+  const prev = prevRecords.length > 0 ? prevRecords[prevRecords.length - 1] : null;
 
-  const today = todayStr();
-  const defaultDate = isEdit ? existing.date : today;
-  const defaultTsmc = isEdit ? existing.tsmcShares : settings.tsmcShares;
-  const defaultTsmcP = isEdit ? existing.tsmcPrice : '';
-  const defaultEtf = isEdit ? existing.etf0050Shares : settings.etf0050Shares;
-  const defaultEtfP = isEdit ? existing.etf0050Price : '';
-  const defaultNote = isEdit ? (existing.note || '') : '';
+  const prevTsmcPrice = prev ? prev.tsmcPrice : null;
+  const prevEtfPrice  = prev ? prev.etf0050Price : null;
+  const tsmcShares    = isEdit ? existing.tsmcShares : settings.tsmcShares;
+  const etfShares     = isEdit ? existing.etf0050Shares : settings.etf0050Shares;
+
+  // 若編輯：顯示已存的漲跌
+  const editTsmcDelta = isEdit && prevTsmcPrice ? (existing.tsmcPrice - prevTsmcPrice) : '';
+  const editEtfDelta  = isEdit && prevEtfPrice  ? (existing.etf0050Price - prevEtfPrice) : '';
+  const defaultNote   = isEdit ? (existing.note || '') : '';
+  const defaultDate   = isEdit ? existing.date : today;
+
+  const prevTsmcDisp = prevTsmcPrice != null ? `$${prevTsmcPrice.toLocaleString('zh-TW',{minimumFractionDigits:1,maximumFractionDigits:2})}` : '—';
+  const prevEtfDisp  = prevEtfPrice  != null ? `$${prevEtfPrice.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '—';
 
   const html = `
-    <div class="form-section-header">基本資訊</div>
+    <div class="form-section-header">日期</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
         <span class="form-label">日期</span>
@@ -705,27 +736,35 @@ function openAddModal(editDate = null) {
       </div>
     </div>
 
-    <div class="form-section-header">台積電 (2330)</div>
+    <div class="form-section-header">台積電 (2330)　股數 ${tsmcShares.toLocaleString()}</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
-        <span class="form-label">股數</span>
-        <input class="form-input" type="number" id="f-tsmc-shares" value="${defaultTsmc}" placeholder="${settings.tsmcShares}" inputmode="numeric">
+        <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
+        <span class="form-input" style="color:var(--label-tertiary);">${prevTsmcDisp}</span>
       </div>
       <div class="form-row">
-        <span class="form-label">價格</span>
-        <input class="form-input" type="number" id="f-tsmc-price" value="${defaultTsmcP}" placeholder="請輸入" inputmode="decimal" step="0.1" oninput="updateLivePreview()">
+        <span class="form-label">漲跌</span>
+        <input class="form-input" type="number" id="f-tsmc-delta" value="${editTsmcDelta}" placeholder="例：+5 或 -3" inputmode="decimal" step="0.1" oninput="updateModalPreview()">
+      </div>
+      <div class="form-row">
+        <span class="form-label" style="color:var(--label-tertiary);">今日成交</span>
+        <span id="f-tsmc-today-display" style="font-size:17px;font-weight:700;color:var(--label-primary);text-align:right;flex:1;">—</span>
       </div>
     </div>
 
-    <div class="form-section-header">元大台灣50 (0050)</div>
+    <div class="form-section-header">元大台灣50 (0050)　股數 ${etfShares.toLocaleString()}</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
-        <span class="form-label">股數</span>
-        <input class="form-input" type="number" id="f-etf-shares" value="${defaultEtf}" placeholder="${settings.etf0050Shares}" inputmode="numeric">
+        <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
+        <span class="form-input" style="color:var(--label-tertiary);">${prevEtfDisp}</span>
       </div>
       <div class="form-row">
-        <span class="form-label">價格</span>
-        <input class="form-input" type="number" id="f-etf-price" value="${defaultEtfP}" placeholder="請輸入" inputmode="decimal" step="0.01" oninput="updateLivePreview()">
+        <span class="form-label">漲跌</span>
+        <input class="form-input" type="number" id="f-etf-delta" value="${editEtfDelta}" placeholder="例：+1.5 或 -0.5" inputmode="decimal" step="0.01" oninput="updateModalPreview()">
+      </div>
+      <div class="form-row">
+        <span class="form-label" style="color:var(--label-tertiary);">今日成交</span>
+        <span id="f-etf-today-display" style="font-size:17px;font-weight:700;color:var(--label-primary);text-align:right;flex:1;">—</span>
       </div>
     </div>
 
@@ -742,7 +781,7 @@ function openAddModal(editDate = null) {
           <span class="live-preview-value" id="lp-total">—</span>
         </div>
         <div class="live-preview-row">
-          <span class="live-preview-label">與前日差額</span>
+          <span class="live-preview-label">今日損益</span>
           <span class="live-preview-value" id="lp-diff">—</span>
         </div>
       </div>
@@ -751,68 +790,71 @@ function openAddModal(editDate = null) {
   `;
 
   document.getElementById('modal-body').innerHTML = html;
+  // Store prev prices for JS access
+  document.getElementById('modal-body').dataset.prevTsmc = prevTsmcPrice || '';
+  document.getElementById('modal-body').dataset.prevEtf  = prevEtfPrice  || '';
+  document.getElementById('modal-body').dataset.tsmcShares = tsmcShares;
+  document.getElementById('modal-body').dataset.etfShares  = etfShares;
   openModal('add-modal');
-
-  if (isEdit) updateLivePreview();
+  if (isEdit) updateModalPreview();
 }
 
-function applyDefaultShares() {
-  const s = loadSettings();
-  document.getElementById('f-tsmc-shares').value = s.tsmcShares;
-  document.getElementById('f-etf-shares').value = s.etf0050Shares;
-  updateLivePreview();
-}
+function updateModalPreview() {
+  const body = document.getElementById('modal-body');
+  const prevTsmc   = parseFloat(body.dataset.prevTsmc) || 0;
+  const prevEtf    = parseFloat(body.dataset.prevEtf)  || 0;
+  const tsmcShares = parseFloat(body.dataset.tsmcShares) || 0;
+  const etfShares  = parseFloat(body.dataset.etfShares)  || 0;
 
-function applyYesterdayShares() {
-  const records = sortedRecords();
-  if (records.length === 0) return;
-  const yesterday = records[records.length - 1];
-  document.getElementById('f-tsmc-shares').value = yesterday.tsmcShares;
-  document.getElementById('f-etf-shares').value = yesterday.etf0050Shares;
-  updateLivePreview();
-}
+  const tsmcDelta = parseFloat(document.getElementById('f-tsmc-delta').value) || 0;
+  const etfDelta  = parseFloat(document.getElementById('f-etf-delta').value)  || 0;
 
-function updateLivePreview() {
-  const tsmcShares = parseFloat(document.getElementById('f-tsmc-shares').value) || 0;
-  const tsmcPrice = parseFloat(document.getElementById('f-tsmc-price').value) || 0;
-  const etfShares = parseFloat(document.getElementById('f-etf-shares').value) || 0;
-  const etfPrice = parseFloat(document.getElementById('f-etf-price').value) || 0;
+  const tsmcPrice = prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta;
+  const etfPrice  = prevEtf  ? prevEtf  + etfDelta  : etfDelta;
 
-  if (tsmcPrice === 0 && etfPrice === 0) {
+  // Show today price
+  const tsmcDisp = document.getElementById('f-tsmc-today-display');
+  const etfDisp  = document.getElementById('f-etf-today-display');
+  tsmcDisp.textContent = tsmcPrice > 0 ? `$${tsmcPrice.toLocaleString('zh-TW',{minimumFractionDigits:1,maximumFractionDigits:2})}` : '—';
+  etfDisp.textContent  = etfPrice  > 0 ? `$${etfPrice.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '—';
+
+  // Live preview
+  if (tsmcPrice <= 0 && etfPrice <= 0) {
     document.getElementById('lp-total').textContent = '—';
-    document.getElementById('lp-diff').textContent = '—';
+    document.getElementById('lp-diff').textContent  = '—';
     return;
   }
-
   const total = (tsmcShares * tsmcPrice) + (etfShares * etfPrice);
   document.getElementById('lp-total').textContent = fmtMoney(total);
 
-  // Compare with previous record
-  const records = sortedRecords();
-  const dateStr = document.getElementById('f-date') ? document.getElementById('f-date').value : '';
-  const prevRecords = records.filter(r => r.date < dateStr);
-  const prev = prevRecords.length > 0 ? prevRecords[prevRecords.length - 1] : (records.length > 0 ? records[records.length - 1] : null);
-  if (prev && total > 0) {
-    const diff = total - prev.totalMarketValue;
+  const prevTotal = (tsmcShares * prevTsmc) + (etfShares * prevEtf);
+  if (prevTotal > 0) {
+    const diff = total - prevTotal;
     const el = document.getElementById('lp-diff');
     el.innerHTML = fmtProfit(diff);
     el.className = 'live-preview-value ' + profitClass(diff);
-  } else {
-    document.getElementById('lp-diff').textContent = '—';
   }
 }
 
 function saveRecord() {
-  const date = document.getElementById('f-date').value;
-  const tsmcShares = parseInt(document.getElementById('f-tsmc-shares').value) || 0;
-  const tsmcPrice = parseFloat(document.getElementById('f-tsmc-price').value) || 0;
-  const etfShares = parseInt(document.getElementById('f-etf-shares').value) || 0;
-  const etfPrice = parseFloat(document.getElementById('f-etf-price').value) || 0;
-  const note = document.getElementById('f-note').value.trim();
+  const date       = document.getElementById('f-date').value;
+  const body       = document.getElementById('modal-body');
+  const prevTsmc   = parseFloat(body.dataset.prevTsmc) || 0;
+  const prevEtf    = parseFloat(body.dataset.prevEtf)  || 0;
+  const tsmcShares = parseInt(body.dataset.tsmcShares) || 0;
+  const etfShares  = parseInt(body.dataset.etfShares)  || 0;
+  const tsmcDelta  = parseFloat(document.getElementById('f-tsmc-delta').value);
+  const etfDelta   = parseFloat(document.getElementById('f-etf-delta').value);
+  const note       = document.getElementById('f-note').value.trim();
 
   if (!date) { showToast('請選擇日期'); return; }
-  if (tsmcPrice <= 0 || etfPrice <= 0) { showToast('請輸入股票價格'); return; }
-  if (tsmcShares <= 0 || etfShares <= 0) { showToast('請輸入股數'); return; }
+  if (isNaN(tsmcDelta) || isNaN(etfDelta)) { showToast('請輸入漲跌值'); return; }
+
+  const tsmcPrice = prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta;
+  const etfPrice  = prevEtf  ? prevEtf  + etfDelta  : etfDelta;
+
+  if (tsmcPrice <= 0 || etfPrice <= 0) { showToast('計算後價格不合理，請確認漲跌值'); return; }
+  if (tsmcShares <= 0 || etfShares <= 0) { showToast('股數設定有誤，請至設定頁確認'); return; }
 
   const totalMarketValue = (tsmcShares * tsmcPrice) + (etfShares * etfPrice);
   const record = {
@@ -839,10 +881,8 @@ function saveRecord() {
 
   // Refresh current tab
   setTimeout(() => {
-    if (currentTab === 'home') renderHome();
-    else if (currentTab === 'history') renderHistory();
-    else if (currentTab === 'charts') renderCharts();
-    renderHome(); // always update home data
+    if (currentTab === 'history') renderHistory();
+    renderHome();
   }, 100);
 }
 
