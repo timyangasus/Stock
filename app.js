@@ -857,10 +857,8 @@ function updateModalPreview() {
   const tsmcDelta = getSignedDelta('tsmc');
   const etfDelta  = getSignedDelta('etf');
 
-  const tsmcPrice = prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta;
-  const etfPrice  = prevEtf  ? prevEtf  + etfDelta  : etfDelta;
-
-  // Show today price
+  const tsmcPrice = Math.round((prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta) * 100) / 100;
+  const etfPrice  = Math.round((prevEtf  ? prevEtf  + etfDelta  : etfDelta)  * 100) / 100;
   const tsmcDisp = document.getElementById('f-tsmc-today-display');
   const etfDisp  = document.getElementById('f-etf-today-display');
   tsmcDisp.textContent = tsmcPrice > 0 ? `$${tsmcPrice.toLocaleString('zh-TW',{minimumFractionDigits:1,maximumFractionDigits:2})}` : '—';
@@ -898,8 +896,8 @@ function saveRecord() {
   if (!date) { showToast('請選擇日期'); return; }
   if (tsmcDelta === 0 && etfDelta === 0 && !prevTsmc && !prevEtf) { showToast('請輸入漲跌值'); return; }
 
-  const tsmcPrice = prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta;
-  const etfPrice  = prevEtf  ? prevEtf  + etfDelta  : etfDelta;
+  const tsmcPrice = Math.round((prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta) * 100) / 100;
+  const etfPrice  = Math.round((prevEtf  ? prevEtf  + etfDelta  : etfDelta)  * 100) / 100;
 
   if (tsmcPrice <= 0 || etfPrice <= 0) { showToast('計算後價格不合理，請確認漲跌值'); return; }
   if (tsmcShares <= 0 || etfShares <= 0) { showToast('股數設定有誤，請至設定頁確認'); return; }
