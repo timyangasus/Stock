@@ -76,7 +76,11 @@ function profitClass(n) {
 }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function fmtDate(dateStr) {
@@ -622,7 +626,7 @@ function showDetail(dateStr) {
     <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">損益</div>
     <div class="card">
       ${detailRow('當日損益', colorVal(rec.dailyProfit))}
-      ${detailRow('本年損益', colorVal(rec.yearlyProfit))}
+      ${detailRow('今年損益', colorVal(rec.yearlyProfit))}
       ${rec.note ? detailRow('備註', rec.note) : ''}
     </div>
   </div>`;
@@ -872,6 +876,27 @@ function confirmCancel() {
 function confirmOk() {
   document.getElementById('confirm-overlay').classList.remove('open');
   if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+}
+
+function clearTodayRecord() {
+  const today = todayStr();
+  const records = loadRecords();
+  const hasTodayRecord = records.some(r => r.date === today);
+  if (!hasTodayRecord) {
+    showToast('今日尚無資料');
+    return;
+  }
+  confirmCallback = () => {
+    const updated = records.filter(r => r.date !== today);
+    saveRecords(updated);
+    renderHome();
+    showToast('今日資料已清除');
+  };
+  document.getElementById('confirm-title').textContent = '清除今日資料';
+  document.getElementById('confirm-msg').textContent = `確定要清除 ${todayStr()} 的紀錄嗎？`;
+  document.getElementById('confirm-ok-btn').textContent = '清除';
+  document.getElementById('confirm-ok-btn').className = 'confirm-btn destructive';
+  openConfirm();
 }
 
 /* =====================================================================

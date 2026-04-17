@@ -56,7 +56,14 @@
         <div class="nav-bar-inner">
           <span></span>
           <span class="nav-title" style="opacity:0">首頁</span>
-          <button class="nav-btn icon-btn" onclick="openAddModal()" style="font-size:28px;font-weight:600;">＋</button>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <button class="nav-btn" onclick="clearTodayRecord()" style="color:var(--blue);justify-content:center;">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="m19 8-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>
+            </button>
+            <button class="nav-btn" onclick="openAddModal()" style="color:var(--blue);justify-content:center;">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -89,7 +96,7 @@
               <div style="font-size:24px;font-weight:600;letter-spacing:-0.374px;margin-top:6px;" id="val-month">—</div>
             </div>
             <div class="metric-card">
-              <div class="metric-label">本年</div>
+              <div class="metric-label">今年</div>
               <div style="font-size:24px;font-weight:600;letter-spacing:-0.374px;margin-top:6px;" id="val-year">—</div>
             </div>
           </div>
