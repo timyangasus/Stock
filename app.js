@@ -456,7 +456,6 @@ function onPriceInput() {
     `<div class="profit-badge ${overallCls}">${fmtProfit(dailyProfit)}</div>`;
 
   // 自動儲存今日價格到紀錄
-  const today = todayStr();
   let allRecords = loadRecords();
   const todayIdx = allRecords.findIndex(r => r.date === today);
   const updatedRecord = {
