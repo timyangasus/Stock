@@ -584,8 +584,14 @@ function renderHistoryGrouped(enriched, wrapper) {
         <span id="arrow-${safeKey}" style="margin-left:10px;font-size:22px;color:var(--label-secondary);transition:transform 0.2s;display:inline-block;flex-shrink:0;">▾</span>
       </div>
       <!-- 展開內容 -->
-      <div id="group-${safeKey}">
+      <div id="group-${safeKey}" style="display:${getGroupState(safeKey) ? '' : 'none'}">
     `;
+
+    // 設定箭頭初始方向
+    setTimeout(() => {
+      const arrow = document.getElementById('arrow-' + safeKey);
+      if (arrow) arrow.style.transform = getGroupState(safeKey) ? 'rotate(0deg)' : 'rotate(-90deg)';
+    }, 0);
 
     g.records.forEach(rec => {
       const dcls = profitClass(rec.dailyProfit);
@@ -616,6 +622,19 @@ function toggleGroup(safeKey) {
   const isOpen = content.style.display !== 'none';
   content.style.display = isOpen ? 'none' : '';
   arrow.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
+  // 記錄狀態
+  try {
+    const states = JSON.parse(sessionStorage.getItem('groupStates') || '{}');
+    states[safeKey] = !isOpen; // true = open
+    sessionStorage.setItem('groupStates', JSON.stringify(states));
+  } catch(e) {}
+}
+
+function getGroupState(safeKey) {
+  try {
+    const states = JSON.parse(sessionStorage.getItem('groupStates') || '{}');
+    return safeKey in states ? states[safeKey] : true; // 預設展開
+  } catch(e) { return true; }
 }
 
 /* =====================================================================
