@@ -534,7 +534,7 @@ function renderHistoryDay(enriched, wrapper) {
         </div>
         <div class="list-row-right">
           <div class="list-row-value">${fmtMoney(rec.totalMarketValue)}</div>
-          <span class="profit-badge ${profitCls}" style="font-size:11px;">${fmtProfit(rec.dailyProfit)}</span>
+          <span class="profit-badge ${profitCls}" style="font-size:13px;">${fmtProfit(rec.dailyProfit)}</span>
         </div>
         <span class="list-row-chevron">›</span>
       </div>
@@ -581,7 +581,7 @@ function renderHistoryGrouped(enriched, wrapper) {
         </div>
         <div class="list-row-right">
           <div style="font-size:17px;font-weight:700;letter-spacing:-0.374px;">${fmtMoney(latest.totalMarketValue)}</div>
-          <span class="profit-badge ${cls}" style="font-size:11px;">${fmtProfit(periodProfit)}</span>
+          <span class="profit-badge ${cls}" style="font-size:13px;">${fmtProfit(periodProfit)}</span>
         </div>
         <span id="arrow-${safeKey}" style="margin-left:10px;font-size:22px;color:var(--label-secondary);transition:transform 0.2s;display:inline-block;flex-shrink:0;">▾</span>
       </div>
@@ -604,7 +604,7 @@ function renderHistoryGrouped(enriched, wrapper) {
             <div style="font-size:12px;color:var(--label-tertiary);margin-top:2px;">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
           </div>
           <div class="list-row-right">
-            <span class="profit-badge ${dcls}" style="font-size:11px;">${fmtProfit(rec.dailyProfit)}</span>
+            <span class="profit-badge ${dcls}" style="font-size:13px;">${fmtProfit(rec.dailyProfit)}</span>
           </div>
           <span class="list-row-chevron">›</span>
         </div>
@@ -700,13 +700,14 @@ function showDetail(dateStr) {
 
   let html = '';
 
-  // 日期
-  html += `<div style="padding:0 16px 12px;">
+  // 日期 + 備註（無框線）
+  html += `<div style="padding:0 16px 16px;">
     <div style="font-size:22px;font-weight:700;letter-spacing:-0.374px;">${fmtDateFull(rec.date)}</div>
+    ${rec.note ? `<div style="font-size:14px;color:var(--label-secondary);margin-top:6px;letter-spacing:-0.224px;">${rec.note}</div>` : ''}
   </div>`;
 
   // 個股 — 左右並排
-  html += `<div style="padding:0 16px;margin-bottom:12px;">
+  html += `<div style="padding:0 16px;margin-bottom:20px;">
     <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">個股</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       ${stockCard('台積電', '2330', rec.tsmcPrice, tsmcDelta, tsmcPct)}
@@ -714,14 +715,18 @@ function showDetail(dateStr) {
     </div>
   </div>`;
 
-  // 總市值 + 損益
+  // 總市值 — 獨立卡片
   html += `<div style="padding:0 16px;margin-bottom:20px;">
-    <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">資產與損益</div>
+    <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">總市值</div>
+    <div class="card card-padding">
+      <div style="font-size:20px;font-weight:700;letter-spacing:-0.374px;">$ ${fmtMoney(rec.totalMarketValue).replace('$','').trim()}</div>
+    </div>
+  </div>`;
+
+  // 損益 — 獨立卡片
+  html += `<div style="padding:0 16px;margin-bottom:48px;">
+    <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">損益</div>
     <div class="card">
-      <div class="detail-item">
-        <span class="detail-item-label">總市值</span>
-        <span class="detail-item-value">${fmtMoney(rec.totalMarketValue)}</span>
-      </div>
       <div class="detail-item">
         <span class="detail-item-label">當日損益</span>
         <span class="detail-item-value">${colorVal(rec.dailyProfit)}</span>
@@ -730,21 +735,19 @@ function showDetail(dateStr) {
         <span class="detail-item-label">今年損益</span>
         <span class="detail-item-value">${colorVal(rec.yearlyProfit)}</span>
       </div>
-      ${rec.note ? `<div class="detail-item" style="border-top:0.5px solid var(--separator);border-bottom:none;">
-        <span class="detail-item-label">備註</span>
-        <span class="detail-item-value">${rec.note}</span>
-      </div>` : ''}
     </div>
   </div>`;
 
-  // 刪除按鈕
-  html += `<div style="padding:0 16px 8px;display:flex;justify-content:center;">
+  // 刪除 — 橘色線框膠囊文字按鈕
+  html += `<div style="padding:0 16px 24px;display:flex;justify-content:center;">
     <button onclick="confirmDelete('${rec.date}')" style="
-      width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
-      background:#da7756;display:flex;align-items:center;justify-content:center;
-      box-shadow:0 2px 12px rgba(218,119,86,0.35);transition:opacity 0.15s;
-    " onmousedown="this.style.opacity=0.7" onmouseup="this.style.opacity=1" ontouchstart="this.style.opacity=0.7" ontouchend="this.style.opacity=1">
-      <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 0 24 24" width="22px" fill="#ffffff"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      padding:8px 24px;border-radius:980px;
+      border:1.5px solid #da7756;background:#ffffff;
+      color:#da7756;font-size:14px;font-weight:600;
+      font-family:var(--font-system);letter-spacing:-0.12px;
+      cursor:pointer;transition:opacity 0.15s;
+    " onmousedown="this.style.opacity=0.6" onmouseup="this.style.opacity=1" ontouchstart="this.style.opacity=0.6" ontouchend="this.style.opacity=1">
+      刪除
     </button>
   </div>`;
 
