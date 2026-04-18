@@ -543,7 +543,6 @@ function renderHistoryDay(enriched, wrapper) {
 }
 
 function renderHistoryGrouped(enriched, wrapper) {
-  // Group by week/month/year
   const groups = {};
   const getKey = historyPeriod === 'week' ? weekKey
     : historyPeriod === 'month' ? monthKey : yearKey;
@@ -561,35 +560,40 @@ function renderHistoryGrouped(enriched, wrapper) {
   let html = '';
   sortedKeys.forEach(k => {
     const g = groups[k];
-    const latest = g.records[0]; // Already newest-first
-    const earliest = g.records[g.records.length - 1];
-    const profit = latest.totalMarketValue - earliest.totalMarketValue;
-    // Actually get period profit
+    const latest = g.records[0];
     let periodProfit = 0;
     if (historyPeriod === 'week') periodProfit = g.records[0].weeklyProfit;
     else if (historyPeriod === 'month') periodProfit = g.records[0].monthlyProfit;
     else periodProfit = g.records[0].yearlyProfit;
 
     const cls = profitClass(periodProfit);
-    html += `<div class="section-label">${g.label}</div>
+    const safeKey = k.replace(/[^a-zA-Z0-9]/g, '_');
+
+    html += `
     <div class="list-group" style="margin-bottom:16px;">
-      <div class="list-row" style="cursor:default;">
+      <!-- 群組標題列（可收折） -->
+      <div class="list-row" style="cursor:pointer;min-height:62px;" onclick="toggleGroup('${safeKey}')">
         <div class="list-row-content">
-          <div class="list-row-title">${g.records.length} 筆紀錄</div>
-          <div class="list-row-subtitle">最新：$${latest.tsmcPrice.toLocaleString()} / $${latest.etf0050Price.toLocaleString()}</div>
+          <div style="display:inline-block;background:#414141;color:#fff;font-size:14px;font-weight:600;letter-spacing:-0.12px;padding:4px 12px;border-radius:980px;margin-bottom:4px;">${g.label}</div>
+          <div style="font-size:12px;color:var(--label-tertiary);margin-top:1px;">${g.records.length} 筆紀錄</div>
         </div>
         <div class="list-row-right">
-          <div class="list-row-value">${fmtMoney(latest.totalMarketValue)}</div>
+          <div style="font-size:17px;font-weight:700;letter-spacing:-0.374px;">${fmtMoney(latest.totalMarketValue)}</div>
           <span class="profit-badge ${cls}" style="font-size:11px;">${fmtProfit(periodProfit)}</span>
         </div>
+        <span id="arrow-${safeKey}" style="margin-left:10px;font-size:22px;color:var(--label-secondary);transition:transform 0.2s;display:inline-block;flex-shrink:0;">▾</span>
       </div>
+      <!-- 展開內容 -->
+      <div id="group-${safeKey}">
     `;
+
     g.records.forEach(rec => {
       const dcls = profitClass(rec.dailyProfit);
       html += `
-        <div class="list-row" onclick="showDetail('${rec.date}')" style="padding-left:32px;">
+        <div class="list-row" onclick="showDetail('${rec.date}')" style="padding-left:20px;min-height:54px;border-top:0.5px solid var(--separator);">
           <div class="list-row-content">
-            <div class="list-row-title" style="font-size:15px;">${fmtDateFull(rec.date)}</div>
+            <div style="font-size:15px;font-weight:400;letter-spacing:-0.224px;">${fmtDateFull(rec.date)}</div>
+            <div style="font-size:12px;color:var(--label-tertiary);margin-top:2px;">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
           </div>
           <div class="list-row-right">
             <span class="profit-badge ${dcls}" style="font-size:11px;">${fmtProfit(rec.dailyProfit)}</span>
@@ -598,10 +602,20 @@ function renderHistoryGrouped(enriched, wrapper) {
         </div>
       `;
     });
-    html += '</div>';
+
+    html += `</div></div>`;
   });
 
   wrapper.innerHTML = html || '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">無資料</div></div>';
+}
+
+function toggleGroup(safeKey) {
+  const content = document.getElementById('group-' + safeKey);
+  const arrow   = document.getElementById('arrow-' + safeKey);
+  if (!content) return;
+  const isOpen = content.style.display !== 'none';
+  content.style.display = isOpen ? 'none' : '';
+  arrow.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
 }
 
 /* =====================================================================
@@ -617,14 +631,22 @@ function showDetail(dateStr) {
   const rec = enriched.find(r => r.date === dateStr);
   if (!rec) return;
 
-  const tsmcValue = rec.tsmcShares * rec.tsmcPrice;
-  const etfValue = rec.etf0050Shares * rec.etf0050Price;
+  // 找前一筆算漲跌
+  const idx = enriched.findIndex(r => r.date === dateStr);
+  const prev = idx > 0 ? enriched[idx - 1] : null;
 
-  function detailRow(label, value, colorClass = '') {
-    return `<div class="detail-item">
-      <span class="detail-item-label">${label}</span>
-      <span class="detail-item-value${colorClass ? ' ' + colorClass : ''}">${value}</span>
-    </div>`;
+  const tsmcDelta = prev ? Math.round((rec.tsmcPrice - prev.tsmcPrice) * 100) / 100 : 0;
+  const etfDelta  = prev ? Math.round((rec.etf0050Price - prev.etf0050Price) * 100) / 100 : 0;
+  const tsmcPct   = prev && prev.tsmcPrice > 0 ? (tsmcDelta / prev.tsmcPrice * 100).toFixed(2) : null;
+  const etfPct    = prev && prev.etf0050Price > 0 ? (etfDelta / prev.etf0050Price * 100).toFixed(2) : null;
+
+  function stockColor(n) {
+    return n > 0 ? 'var(--red)' : n < 0 ? 'var(--green)' : 'var(--label-secondary)';
+  }
+
+  function fmtDelta(n) {
+    if (n === 0) return '－';
+    return (n > 0 ? '▲ +' : '▼ ') + Math.abs(n).toLocaleString('zh-TW', {minimumFractionDigits:2, maximumFractionDigits:2});
   }
 
   function colorVal(n) {
@@ -633,49 +655,68 @@ function showDetail(dateStr) {
     return `<span style="color:${color};font-weight:600;">${fmtProfit(n)}</span>`;
   }
 
-  const fmtPrice = (n, dec) => '$' + n.toLocaleString('zh-TW', {minimumFractionDigits:dec, maximumFractionDigits:dec});
+  function stockCard(name, code, price, delta, pct) {
+    const col = stockColor(delta);
+    const borderCol = delta > 0 ? 'var(--red)' : delta < 0 ? 'var(--green)' : '#8e8e93';
+    const bgGrad = delta > 0
+      ? 'linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%)'
+      : delta < 0
+      ? 'linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%)'
+      : 'var(--bg-secondary)';
+    return `
+    <div style="background:${bgGrad};border-radius:var(--radius-card);padding:14px;border:1px solid ${borderCol};box-shadow:var(--shadow-card);">
+      <div style="display:inline-block;background:${borderCol};color:#fff;font-size:13px;font-weight:600;letter-spacing:-0.12px;padding:3px 10px;border-radius:980px;margin-bottom:8px;">${name}</div>
+      <div style="font-size:11px;color:#414141;font-weight:600;margin-bottom:10px;">${code}</div>
+      <div style="text-align:left;">
+        <div style="font-size:20px;font-weight:700;letter-spacing:-0.374px;">$ ${(Math.round(price * 100) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</div>
+        <div style="font-size:20px;font-weight:700;letter-spacing:-0.374px;color:${col};margin-top:8px;">
+          ${fmtDelta(delta)}
+        </div>
+        ${pct !== null ? `<div style="font-size:12px;font-weight:600;color:${col};margin-top:2px;">${parseFloat(pct) > 0 ? '+' : ''}${pct}%</div>` : ''}
+      </div>
+    </div>`;
+  }
 
   let html = '';
 
   // 日期
   html += `<div style="padding:0 16px 12px;">
-    <div style="font-size:22px;font-weight:700;letter-spacing:-0.374px;color:var(--label-primary);">${fmtDateFull(rec.date)}</div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:-0.374px;">${fmtDateFull(rec.date)}</div>
   </div>`;
 
-  // 個股卡片
+  // 個股 — 左右並排
   html += `<div style="padding:0 16px;margin-bottom:12px;">
     <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">個股</div>
-    <div class="card">
-      ${detailRow('台積電股數', rec.tsmcShares.toLocaleString() + ' 股')}
-      ${detailRow('台積電價格', fmtPrice(rec.tsmcPrice, 1))}
-      ${detailRow('台積電市值', fmtMoney(tsmcValue))}
-    </div>
-    <div class="card" style="margin-top:8px;">
-      ${detailRow('0050 股數', rec.etf0050Shares.toLocaleString() + ' 股')}
-      ${detailRow('0050 價格', fmtPrice(rec.etf0050Price, 2))}
-      ${detailRow('0050 市值', fmtMoney(etfValue))}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      ${stockCard('台積電', '2330', rec.tsmcPrice, tsmcDelta, tsmcPct)}
+      ${stockCard('元大台灣50', '0050', rec.etf0050Price, etfDelta, etfPct)}
     </div>
   </div>`;
 
-  // 總市值卡片
-  html += `<div style="padding:0 16px;margin-bottom:12px;">
-    <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">資產</div>
-    <div class="card">
-      ${detailRow('總市值', fmtMoney(rec.totalMarketValue))}
-    </div>
-  </div>`;
-
-  // 損益卡片（只顯示當日 + 本年）
+  // 總市值 + 損益
   html += `<div style="padding:0 16px;margin-bottom:20px;">
-    <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">損益</div>
+    <div style="font-size:12px;color:var(--label-tertiary);letter-spacing:0.3px;text-transform:uppercase;margin-bottom:8px;">資產與損益</div>
     <div class="card">
-      ${detailRow('當日損益', colorVal(rec.dailyProfit))}
-      ${detailRow('今年損益', colorVal(rec.yearlyProfit))}
-      ${rec.note ? detailRow('備註', rec.note) : ''}
+      <div class="detail-item">
+        <span class="detail-item-label">總市值</span>
+        <span class="detail-item-value">${fmtMoney(rec.totalMarketValue)}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-item-label">當日損益</span>
+        <span class="detail-item-value">${colorVal(rec.dailyProfit)}</span>
+      </div>
+      <div class="detail-item" style="border-bottom:none;">
+        <span class="detail-item-label">今年損益</span>
+        <span class="detail-item-value">${colorVal(rec.yearlyProfit)}</span>
+      </div>
+      ${rec.note ? `<div class="detail-item" style="border-top:0.5px solid var(--separator);border-bottom:none;">
+        <span class="detail-item-label">備註</span>
+        <span class="detail-item-value">${rec.note}</span>
+      </div>` : ''}
     </div>
   </div>`;
 
-  // 底部刪除按鈕（Claude 橘色，只有 icon）
+  // 刪除按鈕
   html += `<div style="padding:0 16px 8px;display:flex;justify-content:center;">
     <button onclick="confirmDelete('${rec.date}')" style="
       width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
@@ -726,9 +767,11 @@ function openAddModal(editDate = null) {
   const tsmcShares    = isEdit ? existing.tsmcShares : settings.tsmcShares;
   const etfShares     = isEdit ? existing.etf0050Shares : settings.etf0050Shares;
 
-  // 若編輯：顯示已存的漲跌
-  const editTsmcDelta = isEdit && prevTsmcPrice ? (existing.tsmcPrice - prevTsmcPrice) : '';
-  const editEtfDelta  = isEdit && prevEtfPrice  ? (existing.etf0050Price - prevEtfPrice) : '';
+  // 若編輯：顯示已存的漲跌（四捨五入到小數2位）
+  const editTsmcDeltaRaw = isEdit && prevTsmcPrice ? Math.round((existing.tsmcPrice - prevTsmcPrice) * 100) / 100 : '';
+  const editEtfDeltaRaw  = isEdit && prevEtfPrice  ? Math.round((existing.etf0050Price - prevEtfPrice) * 100) / 100 : '';
+  const editTsmcDelta = editTsmcDeltaRaw;
+  const editEtfDelta  = editEtfDeltaRaw;
   const defaultNote   = isEdit ? (existing.note || '') : '';
   const defaultDate   = isEdit ? existing.date : today;
 
