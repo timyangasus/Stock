@@ -560,7 +560,7 @@ function renderHistoryGrouped(enriched, wrapper) {
   const sortedKeys = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
   let html = '';
-  sortedKeys.forEach(k => {
+  sortedKeys.forEach((k, idx) => {
     const g = groups[k];
     const latest = g.records[0];
     let periodProfit = 0;
@@ -570,6 +570,10 @@ function renderHistoryGrouped(enriched, wrapper) {
 
     const cls = profitClass(periodProfit);
     const safeKey = k.replace(/[^a-zA-Z0-9]/g, '_');
+
+    // 預設：第一個（最新）展開，其餘折起；使用者手動操作過以 sessionStorage 為準
+    const storedStates = (() => { try { return JSON.parse(sessionStorage.getItem('groupStates') || '{}'); } catch(e) { return {}; } })();
+    const defaultOpen = safeKey in storedStates ? storedStates[safeKey] : (idx === 0);
 
     html += `
     <div class="list-group" style="margin-bottom:16px;">
@@ -586,13 +590,13 @@ function renderHistoryGrouped(enriched, wrapper) {
         <span id="arrow-${safeKey}" style="margin-left:10px;font-size:22px;color:var(--label-secondary);transition:transform 0.2s;display:inline-block;flex-shrink:0;">▾</span>
       </div>
       <!-- 展開內容 -->
-      <div id="group-${safeKey}" style="display:${getGroupState(safeKey) ? '' : 'none'}">
+      <div id="group-${safeKey}" style="display:${defaultOpen ? '' : 'none'}">
     `;
 
     // 設定箭頭初始方向
     setTimeout(() => {
       const arrow = document.getElementById('arrow-' + safeKey);
-      if (arrow) arrow.style.transform = getGroupState(safeKey) ? 'rotate(0deg)' : 'rotate(-90deg)';
+      if (arrow) arrow.style.transform = defaultOpen ? 'rotate(0deg)' : 'rotate(-90deg)';
     }, 0);
 
     g.records.forEach(rec => {
