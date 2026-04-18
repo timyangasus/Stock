@@ -242,10 +242,12 @@ function renderHome() {
   // 今日未記錄：today 顯示空，週/月/年取最新一筆
   const todayRec = enriched.find(r => r.date === today);
 
-  // Total value — 今日無資料時顯示空
+  // Total value — 今日無資料時顯示上一筆（標註日期）
   if (!todayRec) {
-    document.getElementById('home-total-value').textContent = '—';
-    document.getElementById('home-profit-badge').innerHTML = '';
+    document.getElementById('home-total-value').textContent = fmtMoney(latest.totalMarketValue);
+    document.getElementById('home-total-value').className = 'metric-value neutral';
+    document.getElementById('home-profit-badge').innerHTML =
+      `<div style="font-size:11px;color:var(--label-tertiary);margin-top:4px;">上次紀錄 ${fmtDateFull(latest.date)}</div>`;
   } else {
     document.getElementById('home-total-value').textContent = fmtMoney(todayRec.totalMarketValue);
     document.getElementById('home-total-value').className = 'metric-value neutral';
