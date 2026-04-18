@@ -742,8 +742,8 @@ function showDetail(dateStr) {
   html += `<div style="padding:0 16px 24px;display:flex;justify-content:center;">
     <button onclick="confirmDelete('${rec.date}')" style="
       padding:8px 24px;border-radius:980px;
-      border:1.5px solid #da7756;background:#ffffff;
-      color:#da7756;font-size:14px;font-weight:600;
+      border:1px solid rgba(255,59,48,0.4);background:#ffffff;
+      color:var(--red);font-size:14px;font-weight:600;
       font-family:var(--font-system);letter-spacing:-0.12px;
       cursor:pointer;transition:opacity 0.15s;
     " onmousedown="this.style.opacity=0.6" onmouseup="this.style.opacity=1" ontouchstart="this.style.opacity=0.6" ontouchend="this.style.opacity=1">

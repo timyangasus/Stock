@@ -15,7 +15,7 @@
   const c = document.createElement('canvas');
   c.width = 180; c.height = 180;
   const ctx = c.getContext('2d');
-  // Background — Claude orange
+  // Background — 橘→紅漸層
   const r = 38;
   ctx.beginPath();
   ctx.moveTo(r,0); ctx.lineTo(180-r,0);
@@ -24,7 +24,10 @@
   ctx.lineTo(r,180); ctx.quadraticCurveTo(0,180,0,180-r);
   ctx.lineTo(0,r); ctx.quadraticCurveTo(0,0,r,0);
   ctx.closePath();
-  ctx.fillStyle = '#da7756';
+  const grad = ctx.createLinearGradient(0, 0, 180, 180);
+  grad.addColorStop(0, '#FF8C42');
+  grad.addColorStop(1, '#E8293A');
+  ctx.fillStyle = grad;
   ctx.fill();
   // Chart polyline (scaled from 24px viewBox to ~110px, centered)
   const s = 110/24, ox = 35, oy = 35;
