@@ -300,6 +300,7 @@ function renderHome() {
 function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBasis) {
   const value = shares * price;
   const diff = prevPrice != null ? (price - prevPrice) * shares : 0;
+  const priceDiff = prevPrice != null ? Math.round((price - prevPrice) * 100) / 100 : 0;
   const cls = profitClass(diff);
   const costUnrealized = costBasis != null ? value - costBasis : null;
   const returnRate = costBasis != null && costBasis > 0
@@ -313,15 +314,18 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
         <div class="stock-code">${code}</div>
       </div>
       <div class="stock-price-area">
-        <input
-          id="price-input-${id}"
-          type="number"
-          inputmode="decimal"
-          step="0.1"
-          value="${price}"
-          style="border:none;background:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label-primary);font-family:var(--font-system);text-align:right;width:110px;outline:none;-webkit-appearance:none;"
-          oninput="onPriceInput()"
-        >
+        <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+          <input
+            id="price-input-${id}"
+            type="number"
+            inputmode="decimal"
+            step="0.1"
+            value="${price}"
+            style="border:none;background:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label-primary);font-family:var(--font-system);text-align:right;width:110px;outline:none;-webkit-appearance:none;"
+            oninput="onPriceInput()"
+          >
+          <div id="daily-diff-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;color:${priceDiff > 0 ? 'var(--red)' : priceDiff < 0 ? 'var(--green)' : 'var(--label-secondary)'};">${priceDiff !== 0 ? (priceDiff > 0 ? '▲ +' : '▼ ') + Math.abs(priceDiff).toFixed(2) : '—'}</div>
+        </div>
         <div class="profit-badge ${cls}" style="justify-content:flex-end;" id="diff-badge-${id}">${fmtProfit(diff)}</div>
       </div>
     </div>
@@ -334,16 +338,15 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
         <div class="stock-stat-label">市值</div>
         <div class="stock-stat-value" id="value-display-${id}">${fmtMoney(value)}</div>
       </div>
-      ${costUnrealized != null ? `
       <div class="stock-stat" style="text-align:right;">
-        <div class="stock-stat-label">未實現</div>
-        <div class="stock-stat-value ${profitClass(costUnrealized)}" id="unrealized-${id}">${fmtProfit(costUnrealized)}</div>
-      </div>` : ''}
+        <div class="stock-stat-label">報酬率</div>
+        <div style="font-size:13px;font-weight:700;color:${returnRate != null ? (parseFloat(returnRate) >= 0 ? 'var(--red)' : 'var(--green)') : 'var(--label-tertiary)'};">${returnRate != null ? ((parseFloat(returnRate) >= 0 ? '▲ +' : '▼ ') + Math.abs(returnRate) + '%') : '—'}</div>
+      </div>
     </div>
-    ${returnRate != null ? `
-    <div style="border-top:0.5px solid var(--separator);padding-top:10px;margin-top:4px;display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:11px;color:var(--label-tertiary);">報酬率</span>
-      <span style="font-size:14px;font-weight:700;color:${parseFloat(returnRate) >= 0 ? 'var(--red)' : 'var(--green)'};">${parseFloat(returnRate) >= 0 ? '▲' : '▼'} ${Math.abs(returnRate)}%</span>
+    ${costUnrealized != null ? `
+    <div style="border-top:0.5px solid var(--separator);padding-top:10px;margin-top:4px;display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:11px;color:var(--label-tertiary);">未實現</div>
+      <div class="stock-stat-value ${profitClass(costUnrealized)}" id="unrealized-${id}">${fmtProfit(costUnrealized)}</div>
     </div>` : ''}
   `;
 }
@@ -401,6 +404,13 @@ function onPriceInput() {
       etfBadge.innerHTML = fmtProfit(etfDiff);
       etfBadge.className = 'profit-badge ' + profitClass(etfDiff);
     }
+    // Update daily diff in shares row (per-share points)
+    const tsmcPriceDiff = Math.round((tsmcPrice - prevRec.tsmcPrice) * 100) / 100;
+    const etfPriceDiff  = Math.round((etfPrice  - prevRec.etf0050Price) * 100) / 100;
+    const tsmcDD = document.getElementById('daily-diff-tsmc');
+    const etfDD  = document.getElementById('daily-diff-etf');
+    if (tsmcDD) { tsmcDD.innerHTML = tsmcPriceDiff !== 0 ? (tsmcPriceDiff > 0 ? '▲ +' : '▼ ') + Math.abs(tsmcPriceDiff).toFixed(2) : '—'; tsmcDD.style.color = tsmcPriceDiff > 0 ? 'var(--red)' : tsmcPriceDiff < 0 ? 'var(--green)' : 'var(--label-secondary)'; }
+    if (etfDD)  { etfDD.innerHTML  = etfPriceDiff  !== 0 ? (etfPriceDiff  > 0 ? '▲ +' : '▼ ') + Math.abs(etfPriceDiff).toFixed(2)  : '—'; etfDD.style.color  = etfPriceDiff  > 0 ? 'var(--red)' : etfPriceDiff  < 0 ? 'var(--green)' : 'var(--label-secondary)'; }
   }
 
   // Update unrealized if cost set
