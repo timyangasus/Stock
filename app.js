@@ -90,7 +90,10 @@ function fmtDate(dateStr) {
 
 function fmtDateFull(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}.${m}.${day}`;
 }
 
 function weekLabel(dateStr) {
@@ -539,7 +542,7 @@ function renderHistoryDay(enriched, wrapper) {
     html += `
       <div class="list-row" onclick="showDetail('${rec.date}')">
         <div class="list-row-content">
-          <div class="list-row-title">${fmtDateFull(rec.date)}</div>
+          <div class="list-row-title" style="font-weight:700;">${fmtDateFull(rec.date)}</div>
           <div class="list-row-subtitle">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
         </div>
         <div class="list-row-right">
@@ -590,7 +593,7 @@ function renderHistoryGrouped(enriched, wrapper) {
       <!-- 群組標題列（可收折） -->
       <div class="list-row" style="cursor:pointer;min-height:62px;" onclick="toggleGroup('${safeKey}')">
         <div class="list-row-content">
-          <div style="display:inline-block;background:#414141;color:#fff;font-size:14px;font-weight:600;letter-spacing:-0.12px;padding:4px 12px;border-radius:980px;margin-bottom:4px;">${g.label}</div>
+          <div style="display:inline-block;background:#414141;color:#fff;font-size:12px;font-weight:400;letter-spacing:-0.08px;padding:3px 10px;border-radius:980px;margin-bottom:4px;">${g.label}</div>
           <div style="font-size:12px;color:var(--label-tertiary);margin-top:1px;">${g.records.length} 筆紀錄</div>
         </div>
         <div class="list-row-right">
@@ -614,7 +617,7 @@ function renderHistoryGrouped(enriched, wrapper) {
       html += `
         <div class="list-row" onclick="showDetail('${rec.date}')" style="padding-left:20px;min-height:54px;border-top:0.5px solid var(--separator);">
           <div class="list-row-content">
-            <div style="font-size:15px;font-weight:400;letter-spacing:-0.224px;">${fmtDateFull(rec.date)}</div>
+            <div style="font-size:15px;font-weight:700;letter-spacing:-0.224px;">${fmtDateFull(rec.date)}</div>
             <div style="font-size:12px;color:var(--label-tertiary);margin-top:2px;">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
           </div>
           <div class="list-row-right">
