@@ -501,7 +501,7 @@ function onPriceInput() {
    HISTORY PAGE
    ===================================================================== */
 
-let historyPeriod = 'day';
+let historyPeriod = 'week';
 
 function setHistoryPeriod(period) {
   historyPeriod = period;
