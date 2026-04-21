@@ -271,7 +271,7 @@ function renderHome() {
       el.innerHTML = '—';
       el.style.color = '';
     } else {
-      el.innerHTML = fmtProfit(v);
+      el.innerHTML = fmtMoney(Math.abs(v));
       const cls = profitClass(v);
       el.style.color = cls === 'positive' ? 'var(--red)' : cls === 'negative' ? 'var(--green)' : 'var(--label-primary)';
     }
@@ -466,7 +466,7 @@ function onPriceInput() {
     const el = document.getElementById('val-' + p);
     if (!el) return;
     const v = profits[p];
-    el.innerHTML = fmtProfit(v);
+    el.innerHTML = fmtMoney(Math.abs(v));
     const cls = profitClass(v);
     el.style.color = cls === 'positive' ? 'var(--red)' : cls === 'negative' ? 'var(--green)' : 'var(--label-primary)';
   });
