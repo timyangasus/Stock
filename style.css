@@ -1,32 +1,31 @@
-/* ===================== CSS VARIABLES — OpenCode Light ===================== */
+/* ===================== CSS VARIABLES — Apple Design System ===================== */
 :root {
-  --bg-primary: #f8f7f7;
+  --bg-primary: #f5f5f7;
   --bg-secondary: #ffffff;
-  --bg-tertiary: #f1eeee;
-  --bg-input: #f8f7f7;
-  --label-primary: #201d1d;
-  --label-secondary: #424245;
-  --label-tertiary: #6e6e73;
-  --label-quaternary: rgba(32,29,29,0.18);
-  --separator: rgba(15,0,0,0.10);
-  --separator-strong: #646262;
-  --fill-primary: rgba(32,29,29,0.08);
-  --fill-secondary: rgba(32,29,29,0.05);
-  --blue: #007aff;
-  --blue-dark: #0056b3;
-  --green: #30d158;
+  --bg-tertiary: #e8e8ed;
+  --label-primary: #1d1d1f;
+  --label-secondary: rgba(0,0,0,0.56);
+  --label-tertiary: rgba(0,0,0,0.36);
+  --label-quaternary: rgba(0,0,0,0.18);
+  --separator: rgba(0,0,0,0.1);
+  --separator-strong: #c7c7cc;
+  --fill-primary: rgba(120,120,128,0.2);
+  --fill-secondary: rgba(120,120,128,0.12);
+  --blue: #0071e3;
+  --blue-dark: #0066cc;
+  --green: #34c759;
   --red: #ff3b30;
-  --orange: #ff9f0a;
-  --gray: #9a9898;
-  --gray2: #646262;
-  --gray3: rgba(32,29,29,0.24);
-  --gray4: rgba(32,29,29,0.12);
-  --gray5: #f1eeee;
-  --gray6: #f8f7f7;
-  --font-system: 'Berkeley Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --radius-card: 4px;
-  --radius-small: 4px;
-  --shadow-card: none;
+  --orange: #ff9500;
+  --gray: rgba(0,0,0,0.48);
+  --gray2: rgba(0,0,0,0.32);
+  --gray3: rgba(0,0,0,0.18);
+  --gray4: rgba(0,0,0,0.12);
+  --gray5: #e8e8ed;
+  --gray6: #f5f5f7;
+  --font-system: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --radius-card: 12px;
+  --radius-small: 8px;
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
   --safe-top: env(safe-area-inset-top, 44px);
   --safe-bottom: env(safe-area-inset-bottom, 34px);
   --tab-height: 83px;
@@ -35,7 +34,7 @@
 
 /* ===================== RESET ===================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { font-size: 16px; }
+html { font-size: 17px; }
 body {
   font-family: var(--font-system);
   background: var(--bg-primary);
@@ -82,9 +81,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: #f8f7f7;
+  background: rgba(245,245,247,0.88);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
   padding-top: var(--safe-top);
-  border-bottom: 1px solid var(--separator);
+  border-bottom: 0.5px solid var(--separator);
 }
 
 .nav-bar-inner {
@@ -97,9 +98,9 @@ body {
 }
 
 .nav-title {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.374px;
   color: var(--label-primary);
   position: absolute;
   left: 50%;
@@ -110,11 +111,11 @@ body {
 .nav-btn {
   background: none;
   border: none;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 400;
   color: var(--blue);
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 2px;
   min-width: 44px;
   display: flex;
   align-items: center;
@@ -122,11 +123,11 @@ body {
 }
 
 .nav-btn.icon-btn {
-  font-size: 24px;
-  font-weight: 400;
+  font-size: 26px;
+  font-weight: 300;
   line-height: 1;
   justify-content: flex-end;
-  color: var(--label-primary);
+  color: var(--blue);
 }
 
 /* Large Title */
@@ -136,25 +137,28 @@ body {
 }
 
 .large-title {
-  font-size: 38px;
+  font-size: 34px;
   font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.5;
+  letter-spacing: -0.374px;
+  line-height: 1.1;
   color: var(--label-primary);
   font-family: var(--font-system);
 }
 
 .large-title-sub {
-  font-size: 14px;
-  color: var(--label-secondary);
-  line-height: 2;
-  margin-top: 0;
+  font-size: 13px;
+  color: var(--label-tertiary);
+  letter-spacing: -0.12px;
+  margin-top: 4px;
+  font-family: var(--font-system);
 }
 
 /* ===================== TAB BAR ===================== */
 .tab-bar {
-  background: #f8f7f7;
-  border-top: 1px solid var(--separator);
+  background: rgba(245,245,247,0.94);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid var(--separator);
   padding-bottom: var(--safe-bottom);
   display: flex;
   align-items: stretch;
@@ -184,28 +188,27 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9a9898;
-  transition: color 0.15s;
+  color: var(--gray);
+  transition: color 0.2s;
 }
 
 .tab-label {
   font-size: 10px;
   font-weight: 500;
-  color: #9a9898;
-  font-family: var(--font-system);
+  color: var(--gray);
+  letter-spacing: -0.08px;
 }
 
-.tab-item.active .tab-label { color: #201d1d; }
-.tab-item.active .tab-icon { color: #201d1d; }
+.tab-item.active .tab-label { color: var(--blue); }
+.tab-item.active .tab-icon { color: var(--blue); }
 
 /* ===================== SEGMENTED CONTROL ===================== */
 .segmented-control {
   display: flex;
-  background: var(--bg-secondary);
-  border-radius: 4px;
+  background: var(--fill-primary);
+  border-radius: 9px;
   padding: 2px;
   gap: 0;
-  border: 1px solid var(--separator-strong);
 }
 
 .seg-btn {
@@ -215,16 +218,18 @@ body {
   font-weight: 500;
   border: none;
   background: none;
-  border-radius: 2px;
+  border-radius: 7px;
   cursor: pointer;
-  color: var(--label-secondary);
-  transition: all 0.15s;
+  color: var(--label-primary);
+  transition: all 0.2s;
+  letter-spacing: -0.1px;
   font-family: var(--font-system);
 }
 
 .seg-btn.active {
-  background: #9a9898;
-  color: #fdfcfc;
+  background: var(--bg-secondary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  color: var(--label-primary);
 }
 
 /* ===================== CARDS ===================== */
@@ -232,14 +237,14 @@ body {
   background: var(--bg-secondary);
   border-radius: var(--radius-card);
   overflow: hidden;
-  border: 1px solid var(--separator);
+  box-shadow: var(--shadow-card);
 }
 
 .card-padding { padding: 16px; }
 
 .section {
   padding: 0 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 /* ===================== METRIC CARD ===================== */
@@ -247,29 +252,28 @@ body {
   background: var(--bg-secondary);
   border-radius: var(--radius-card);
   padding: 14px 16px;
-  border: 1px solid var(--separator);
+  box-shadow: var(--shadow-card);
 }
 
 .metric-label {
   font-size: 12px;
   font-weight: 400;
-  color: var(--label-secondary);
-  line-height: 2;
-  margin-bottom: 0;
-  font-family: var(--font-system);
+  color: var(--label-tertiary);
+  letter-spacing: -0.12px;
+  margin-bottom: 4px;
 }
 
 .metric-value {
   font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1.5;
-  font-family: var(--font-system);
+  font-weight: 600;
+  letter-spacing: -0.374px;
+  line-height: 1.14;
 }
 
 .metric-sub {
-  font-size: 14px;
-  color: var(--label-secondary);
+  font-size: 12px;
+  color: var(--label-tertiary);
+  letter-spacing: -0.12px;
   margin-top: 2px;
 }
 
@@ -282,15 +286,15 @@ body {
   align-items: center;
   gap: 3px;
   font-size: 12px;
-  font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 4px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 980px;
   margin-top: 4px;
-  font-family: var(--font-system);
+  letter-spacing: -0.12px;
 }
 
-.profit-badge.positive { background: rgba(255,59,48,0.12); color: var(--red); }
-.profit-badge.negative { background: rgba(48,209,88,0.12); color: var(--green); }
+.profit-badge.positive { background: rgba(255,59,48,0.08); color: var(--red); }
+.profit-badge.negative { background: rgba(52,199,89,0.08); color: var(--green); }
 .profit-badge.neutral { background: var(--fill-secondary); color: var(--label-secondary); }
 
 /* ===================== STOCK CARD ===================== */
@@ -298,7 +302,7 @@ body {
   background: var(--bg-secondary);
   border-radius: var(--radius-card);
   padding: 16px;
-  border: 1px solid var(--separator);
+  box-shadow: var(--shadow-card);
 }
 
 .stock-header {
@@ -355,16 +359,16 @@ body {
   background: var(--bg-secondary);
   border-radius: var(--radius-card);
   overflow: hidden;
-  border: 1px solid var(--separator);
+  box-shadow: var(--shadow-card);
 }
 
 .list-row {
   display: flex;
   align-items: center;
   padding: 16px 16px;
-  border-bottom: 1px solid var(--separator);
+  border-bottom: 0.5px solid var(--separator);
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 0.15s;
   min-height: 72px;
 }
 
@@ -378,16 +382,16 @@ body {
 
 .list-row-title {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 400;
+  letter-spacing: -0.224px;
   color: var(--label-primary);
-  font-family: var(--font-system);
 }
 
 .list-row-subtitle {
   font-size: 12px;
-  color: var(--label-secondary);
+  color: var(--label-tertiary);
+  letter-spacing: -0.12px;
   margin-top: 2px;
-  font-family: var(--font-system);
 }
 
 .list-row-right {
@@ -399,13 +403,13 @@ body {
 }
 
 .list-row-value {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
-  font-family: var(--font-system);
+  letter-spacing: -0.374px;
 }
 
 .list-row-chevron {
-  color: var(--label-secondary);
+  color: var(--gray3);
   font-size: 14px;
   margin-left: 8px;
   flex-shrink: 0;
@@ -416,7 +420,7 @@ body {
   background: var(--bg-secondary);
   border-radius: var(--radius-card);
   overflow: hidden;
-  border: 1px solid var(--separator);
+  box-shadow: var(--shadow-card);
 }
 
 .card-padding { padding: 16px; }
@@ -429,12 +433,11 @@ body {
 .section-label {
   font-size: 12px;
   font-weight: 400;
-  color: var(--label-secondary);
+  color: var(--label-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   padding: 0 4px;
   margin-bottom: 8px;
-  font-family: var(--font-system);
 }
 
 /* ===================== GRID ===================== */
@@ -453,17 +456,18 @@ body {
   bottom: calc(var(--tab-height) + var(--safe-bottom) + 16px);
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: #201d1d;
-  border: 1px solid #302c2c;
-  color: #fdfcfc;
-  padding: 8px 20px;
-  border-radius: 4px;
+  background: rgba(29,29,31,0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 980px;
   font-size: 14px;
-  font-weight: 500;
-  font-family: var(--font-system);
+  font-weight: 400;
+  letter-spacing: -0.224px;
   z-index: 9999;
   opacity: 0;
-  transition: all 0.15s;
+  transition: all 0.3s;
   white-space: nowrap;
   pointer-events: none;
 }
