@@ -542,7 +542,7 @@ function renderHistoryDay(enriched, wrapper) {
     html += `
       <div class="list-row" onclick="showDetail('${rec.date}')">
         <div class="list-row-content">
-          <div class="list-row-title" style="font-weight:700;">${fmtDateFull(rec.date)}</div>
+          <div class="list-row-title" style="font-weight:700;font-size:19px;">${fmtDateFull(rec.date)}</div>
           <div class="list-row-subtitle">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
         </div>
         <div class="list-row-right">
@@ -617,7 +617,7 @@ function renderHistoryGrouped(enriched, wrapper) {
       html += `
         <div class="list-row" onclick="showDetail('${rec.date}')" style="padding-left:20px;min-height:54px;border-top:0.5px solid var(--separator);">
           <div class="list-row-content">
-            <div style="font-size:15px;font-weight:700;letter-spacing:-0.224px;">${fmtDateFull(rec.date)}</div>
+            <div style="font-size:19px;font-weight:700;letter-spacing:-0.224px;">${fmtDateFull(rec.date)}</div>
             <div style="font-size:12px;color:var(--label-tertiary);margin-top:2px;">$${rec.tsmcPrice.toLocaleString()} · $${rec.etf0050Price.toLocaleString()}</div>
           </div>
           <div class="list-row-right">
