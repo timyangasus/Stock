@@ -23,6 +23,7 @@
   --gray5: #e8e8ed;
   --gray6: #f5f5f7;
   --font-system: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --font-mono: 'SF Mono', 'SFMono-Regular', ui-monospace, Menlo, Monaco, Consolas, monospace;
   --radius-card: 12px;
   --radius-small: 8px;
   --shadow-card: 0 2px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);

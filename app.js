@@ -34,9 +34,10 @@ function saveRecords(records) {
   localStorage.setItem(STORAGE_KEY_RECORDS, JSON.stringify(records));
 }
 
-// Compute totalMarketValue for a record
+// Compute totalMarketValue for a record（扣手續費 0.9965）
 function calcMarketValue(rec) {
-  return (rec.tsmcShares * rec.tsmcPrice) + (rec.etf0050Shares * rec.etf0050Price);
+  const gross = (rec.tsmcShares * rec.tsmcPrice) + (rec.etf0050Shares * rec.etf0050Price);
+  return Math.round(gross * 0.9965);
 }
 
 // Sort records ascending by date
@@ -385,7 +386,7 @@ function onPriceInput() {
 
   const tsmcValue = tsmcShares * tsmcPrice;
   const etfValue = etfShares * etfPrice;
-  const totalMV = tsmcValue + etfValue;
+  const totalMV = Math.round((tsmcValue + etfValue) * 0.9965);
 
   // Update market value displays
   const tvTsmc = document.getElementById('value-display-tsmc');
