@@ -610,11 +610,11 @@ function renderHistoryGrouped(enriched, wrapper) {
           <!-- 右：總市值 + 大字損益 + 箭頭 -->
           <div style="display:flex;align-items:center;gap:8px;">
             <div style="text-align:right;">
-              <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;">
+              <div style="font-size:14px;color:var(--label-primary);font-weight:700;letter-spacing:-0.12px;margin-bottom:3px;">${fmtMoney(latest.totalMarketValue)}</div>
+              <div style="display:flex;align-items:center;gap:4px;">
                 <span style="font-size:13px;color:${profitColor};">${profitSign}</span>
-                <span style="font-size:22px;font-weight:400;letter-spacing:-0.5px;color:${profitColor};">${profitAbs > 0 ? '$\u00a0' + Math.round(profitAbs).toLocaleString('zh-TW') : '—'}</span>
+                <span style="font-size:26px;font-weight:600;letter-spacing:-0.5px;color:${profitColor};">${profitAbs > 0 ? '$\u00a0' + Math.round(profitAbs).toLocaleString('zh-TW') : '—'}</span>
               </div>
-              <div style="font-size:14px;color:var(--label-primary);font-weight:700;letter-spacing:-0.12px;margin-top:3px;">${fmtMoney(latest.totalMarketValue)}</div>
             </div>
             <span id="arrow-${safeKey}" style="font-size:11px;color:${profitColor};transition:transform 0.2s;display:inline-block;flex-shrink:0;opacity:0.7;">▼</span>
           </div>
