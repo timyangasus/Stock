@@ -589,19 +589,36 @@ function renderHistoryGrouped(enriched, wrapper) {
     const storedStates = (() => { try { return JSON.parse(sessionStorage.getItem('groupStates') || '{}'); } catch(e) { return {}; } })();
     const defaultOpen = safeKey in storedStates ? storedStates[safeKey] : (idx === 0);
 
+    const barColor = periodProfit > 0 ? 'var(--red)' : periodProfit < 0 ? 'var(--green)' : 'var(--separator-strong)';
+    const profitColor = periodProfit > 0 ? 'var(--red)' : periodProfit < 0 ? 'var(--green)' : 'var(--label-primary)';
+    const profitSign = periodProfit > 0 ? '▲' : periodProfit < 0 ? '▼' : '－';
+    const profitAbs = Math.abs(periodProfit);
+
     html += `
     <div class="list-group" style="margin-bottom:16px;">
       <!-- 群組標題列（可收折） -->
-      <div class="list-row" style="cursor:pointer;min-height:62px;" onclick="toggleGroup('${safeKey}')">
-        <div class="list-row-content">
-          <div style="display:inline-block;background:#414141;color:#fff;font-size:12px;font-weight:400;letter-spacing:-0.08px;padding:3px 10px;border-radius:980px;margin-bottom:4px;">${g.label}</div>
-          <div style="font-size:12px;color:var(--label-tertiary);margin-top:1px;">${g.records.length} 筆紀錄</div>
+      <div style="cursor:pointer;display:flex;align-items:stretch;min-height:80px;overflow:hidden;border-radius:var(--radius-card) var(--radius-card) 0 0;" onclick="toggleGroup('${safeKey}')">
+        <!-- 左側彩色豎條 -->
+        <div style="width:5px;flex-shrink:0;background:${barColor};border-radius:0;"></div>
+        <!-- 內容區 -->
+        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;padding:14px 14px 14px 12px;">
+          <!-- 左：標籤 + 筆數 -->
+          <div>
+            <div style="display:inline-block;background:#414141;color:#fff;font-size:12px;font-weight:500;letter-spacing:-0.08px;padding:3px 10px;border-radius:980px;margin-bottom:5px;">${g.label}</div>
+            <div style="font-size:12px;color:var(--label-tertiary);">${g.records.length} 筆紀錄</div>
+          </div>
+          <!-- 右：總市值 + 大字損益 + 箭頭 -->
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="text-align:right;">
+              <div style="font-size:13px;color:var(--label-secondary);font-weight:500;letter-spacing:-0.12px;margin-bottom:3px;">${fmtMoney(latest.totalMarketValue)}</div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span style="font-size:13px;color:${profitColor};">${profitSign}</span>
+                <span style="font-size:26px;font-weight:400;letter-spacing:-0.5px;color:${profitColor};">${profitAbs > 0 ? '$\u00a0' + profitAbs.toLocaleString('zh-TW') : '—'}</span>
+              </div>
+            </div>
+            <span id="arrow-${safeKey}" style="font-size:11px;color:${profitColor};transition:transform 0.2s;display:inline-block;flex-shrink:0;opacity:0.7;">▼</span>
+          </div>
         </div>
-        <div class="list-row-right">
-          <div style="font-size:17px;font-weight:700;letter-spacing:-0.374px;">${fmtMoney(latest.totalMarketValue)}</div>
-          <span class="profit-badge ${cls}" style="font-size:13px;">${fmtProfit(periodProfit)}</span>
-        </div>
-        <span id="arrow-${safeKey}" style="margin-left:10px;font-size:22px;color:var(--label-secondary);transition:transform 0.2s;display:inline-block;flex-shrink:0;">▾</span>
       </div>
       <!-- 展開內容 -->
       <div id="group-${safeKey}" style="display:${defaultOpen ? '' : 'none'}">
@@ -612,6 +629,7 @@ function renderHistoryGrouped(enriched, wrapper) {
       const arrow = document.getElementById('arrow-' + safeKey);
       if (arrow) arrow.style.transform = defaultOpen ? 'rotate(0deg)' : 'rotate(-90deg)';
     }, 0);
+
 
     g.records.forEach(rec => {
       const dcls = profitClass(rec.dailyProfit);
@@ -633,6 +651,16 @@ function renderHistoryGrouped(enriched, wrapper) {
   });
 
   wrapper.innerHTML = html || '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">無資料</div></div>';
+
+  // Fix border radius: when group has expandable content, header row should not round bottom corners
+  sortedKeys.forEach(k => {
+    const safeKey = k.replace(/[^a-zA-Z0-9]/g, '_');
+    const content = document.getElementById('group-' + safeKey);
+    const headerRow = content && content.previousElementSibling;
+    if (headerRow && content.style.display !== 'none') {
+      headerRow.style.borderRadius = 'var(--radius-card) var(--radius-card) 0 0';
+    }
+  });
 }
 
 function toggleGroup(safeKey) {
