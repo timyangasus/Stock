@@ -319,16 +319,17 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
       </div>
       <div class="stock-price-area">
         <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+          <div id="daily-diff-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;color:${priceDiff > 0 ? 'var(--red)' : priceDiff < 0 ? 'var(--green)' : 'var(--label-secondary)'};">${priceDiff !== 0 ? (priceDiff > 0 ? '+' : '') + priceDiff.toFixed(2) : '—'}</div>
+          <div style="width:1px;height:18px;background:var(--separator-strong);flex-shrink:0;"></div>
           <input
             id="price-input-${id}"
             type="number"
             inputmode="decimal"
             step="0.1"
             value="${price}"
-            style="border:none;background:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label-primary);font-family:var(--font-system);text-align:right;width:110px;outline:none;-webkit-appearance:none;"
+            style="border:none;background:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label-primary);font-family:var(--font-system);text-align:right;width:90px;outline:none;-webkit-appearance:none;"
             oninput="onPriceInput()"
           >
-          <div id="daily-diff-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;color:${priceDiff > 0 ? 'var(--red)' : priceDiff < 0 ? 'var(--green)' : 'var(--label-secondary)'};">${priceDiff !== 0 ? (priceDiff > 0 ? '+' : '') + priceDiff.toFixed(2) : '—'}</div>
         </div>
         <div class="profit-badge ${cls}" style="justify-content:flex-end;" id="diff-badge-${id}">${fmtProfit(diff)}</div>
       </div>
@@ -724,15 +725,10 @@ function showDetail(dateStr) {
 
   function stockCard(name, code, price, delta, pct) {
     const col = stockColor(delta);
-    const borderCol = delta > 0 ? 'var(--red)' : delta < 0 ? 'var(--green)' : '#8e8e93';
-    const bgGrad = delta > 0
-      ? 'linear-gradient(145deg, #fff5f5 0%, #ffe8e8 100%)'
-      : delta < 0
-      ? 'linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%)'
-      : 'var(--bg-secondary)';
+    const tagCol = delta > 0 ? 'var(--red)' : delta < 0 ? 'var(--green)' : '#8e8e93';
     return `
-    <div style="background:${bgGrad};border-radius:var(--radius-card);padding:14px;border:1px solid ${borderCol};box-shadow:var(--shadow-card);">
-      <div style="display:inline-block;background:${borderCol};color:#fff;font-size:13px;font-weight:600;letter-spacing:-0.12px;padding:3px 10px;border-radius:980px;margin-bottom:8px;">${name}</div>
+    <div style="background:var(--bg-secondary);border-radius:var(--radius-card);padding:14px;box-shadow:var(--shadow-card);">
+      <div style="display:inline-block;background:${tagCol};color:#fff;font-size:13px;font-weight:600;letter-spacing:-0.12px;padding:3px 10px;border-radius:980px;margin-bottom:8px;">${name}</div>
       <div style="font-size:11px;color:#414141;font-weight:600;margin-bottom:10px;">${code}</div>
       <div style="text-align:left;">
         <div style="font-size:20px;font-weight:700;letter-spacing:-0.374px;">$ ${(Math.round(price * 100) / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</div>
