@@ -318,20 +318,25 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
         <div class="stock-code">${code}</div>
       </div>
       <div class="stock-price-area">
-        <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;">
-          <div id="daily-diff-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;color:${priceDiff > 0 ? 'var(--red)' : priceDiff < 0 ? 'var(--green)' : 'var(--label-secondary)'};">${priceDiff !== 0 ? (priceDiff > 0 ? '+' : '') + priceDiff.toFixed(2) : '—'}</div>
-          <div style="width:1px;height:18px;background:var(--separator-strong);flex-shrink:0;margin:0 2px;"></div>
-          <input
-            id="price-input-${id}"
-            type="number"
-            inputmode="decimal"
-            step="0.1"
-            value="${price}"
-            style="border:none;background:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label-primary);font-family:var(--font-system);text-align:right;width:${String(price).replace('.','').length + 1}ch;min-width:3ch;outline:none;-webkit-appearance:none;"
-            oninput="onPriceInput()"
-          >
+        <div style="display:flex;flex-direction:column;align-items:flex-end;">
+          <div style="display:inline-flex;align-items:center;gap:0;">
+            <div id="daily-diff-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;color:${priceDiff > 0 ? 'var(--red)' : priceDiff < 0 ? 'var(--green)' : 'var(--label-secondary)'};">${priceDiff !== 0 ? (priceDiff > 0 ? '+' : '') + priceDiff.toFixed(2) : '—'}</div>
+            <div style="width:1px;height:18px;background:var(--separator-strong);flex-shrink:0;margin:0 4px;"></div>
+            <div style="position:relative;display:inline-block;">
+              <span id="price-mirror-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;font-family:var(--font-system);visibility:hidden;white-space:pre;padding:0;display:block;">${price}</span>
+              <input
+                id="price-input-${id}"
+                type="number"
+                inputmode="decimal"
+                step="0.1"
+                value="${price}"
+                style="position:absolute;inset:0;border:none;background:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label-primary);font-family:var(--font-system);text-align:left;width:100%;outline:none;-webkit-appearance:none;padding:0;"
+                oninput="onPriceInput()"
+              >
+            </div>
+          </div>
+          <div class="profit-badge ${cls}" id="diff-badge-${id}">${fmtProfit(diff)}</div>
         </div>
-        <div class="profit-badge ${cls}" style="justify-content:flex-end;" id="diff-badge-${id}">${fmtProfit(diff)}</div>
       </div>
     </div>
     <div class="stock-shares-row">
@@ -379,6 +384,12 @@ function onPriceInput() {
   const tsmcInput = document.getElementById('price-input-tsmc');
   const etfInput = document.getElementById('price-input-etf');
   if (!tsmcInput || !etfInput) return;
+
+  // Sync mirror spans for shrink-wrap width
+  const tsmcMirror = document.getElementById('price-mirror-tsmc');
+  const etfMirror  = document.getElementById('price-mirror-etf');
+  if (tsmcMirror) tsmcMirror.textContent = tsmcInput.value || '0';
+  if (etfMirror)  etfMirror.textContent  = etfInput.value  || '0';
 
   const tsmcPrice = parseFloat(tsmcInput.value) || latest.tsmcPrice;
   const etfPrice = parseFloat(etfInput.value) || latest.etf0050Price;
