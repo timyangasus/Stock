@@ -327,7 +327,7 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
             inputmode="decimal"
             step="0.1"
             value="${price}"
-            style="border:none;background:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label-primary);font-family:var(--font-system);text-align:right;width:90px;outline:none;-webkit-appearance:none;"
+            style="border:none;background:none;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--label-primary);font-family:var(--font-system);text-align:right;width:${String(price).replace('.','').length + 1}ch;min-width:3ch;outline:none;-webkit-appearance:none;"
             oninput="onPriceInput()"
           >
         </div>
