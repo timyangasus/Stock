@@ -321,7 +321,7 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
         <div style="display:flex;flex-direction:column;align-items:flex-end;">
           <div style="display:inline-flex;align-items:center;gap:0;">
             <div id="daily-diff-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;color:${priceDiff > 0 ? 'var(--red)' : priceDiff < 0 ? 'var(--green)' : 'var(--label-secondary)'};">${priceDiff !== 0 ? (priceDiff > 0 ? '+' : '') + priceDiff.toFixed(2) : '—'}</div>
-            <div style="width:1px;height:18px;background:var(--separator-strong);flex-shrink:0;margin:0 5px 0 4px;"></div>
+            <div style="width:1px;height:18px;background:var(--separator-strong);flex-shrink:0;margin:0 8px;"></div>
             <div style="position:relative;display:inline-block;">
               <span id="price-mirror-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;font-family:var(--font-system);visibility:hidden;white-space:pre;padding:0;display:block;">${price}</span>
               <input
