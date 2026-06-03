@@ -318,9 +318,9 @@ function buildEditableStockCard(id, name, code, price, shares, prevPrice, costBa
         <div class="stock-code">${code}</div>
       </div>
       <div class="stock-price-area">
-        <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;">
+        <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;">
           <div id="daily-diff-${id}" style="font-size:20px;font-weight:700;letter-spacing:-0.3px;color:${priceDiff > 0 ? 'var(--red)' : priceDiff < 0 ? 'var(--green)' : 'var(--label-secondary)'};">${priceDiff !== 0 ? (priceDiff > 0 ? '+' : '') + priceDiff.toFixed(2) : '—'}</div>
-          <div style="width:1px;height:18px;background:var(--separator-strong);flex-shrink:0;"></div>
+          <div style="width:1px;height:18px;background:var(--separator-strong);flex-shrink:0;margin:0 2px;"></div>
           <input
             id="price-input-${id}"
             type="number"
