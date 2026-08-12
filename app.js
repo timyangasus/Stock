@@ -153,8 +153,10 @@ function getFirstRecordOfPeriod(records, date, period) {
 }
 
 function calcProfits(records) {
-  // records sorted ascending
-  const sorted = [...records].sort((a, b) => a.date.localeCompare(b.date));
+  // records sorted ascending — totalMarketValue 一律以目前公式重新計算，避免舊資料殘留過去的計算結果
+  const sorted = [...records]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .map(rec => ({ ...rec, totalMarketValue: calcMarketValue(rec) }));
   return sorted.map((rec, idx) => {
     const mv = rec.totalMarketValue;
     const prev = idx > 0 ? sorted[idx - 1] : null;
