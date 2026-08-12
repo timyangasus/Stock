@@ -844,22 +844,17 @@ function openAddModal(editDate = null) {
   const tsmcShares    = isEdit ? existing.tsmcShares : settings.tsmcShares;
   const etfShares     = isEdit ? existing.etf0050Shares : settings.etf0050Shares;
 
-  // 若編輯：顯示已存的漲跌（四捨五入到小數2位）
-  const editTsmcDeltaRaw = isEdit && prevTsmcPrice ? Math.round((existing.tsmcPrice - prevTsmcPrice) * 100) / 100 : '';
-  const editEtfDeltaRaw  = isEdit && prevEtfPrice  ? Math.round((existing.etf0050Price - prevEtfPrice) * 100) / 100 : '';
-  const editTsmcDelta = editTsmcDeltaRaw;
-  const editEtfDelta  = editEtfDeltaRaw;
   const defaultNote   = isEdit ? (existing.note || '') : '';
   const defaultDate   = isEdit ? existing.date : today;
 
   const prevTsmcDisp = prevTsmcPrice != null ? `$${prevTsmcPrice.toLocaleString('zh-TW',{minimumFractionDigits:1,maximumFractionDigits:2})}` : '—';
   const prevEtfDisp  = prevEtfPrice  != null ? `$${prevEtfPrice.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '—';
 
-  // 漲跌初始正負
-  const tsmcSign = editTsmcDelta !== '' ? (parseFloat(editTsmcDelta) >= 0 ? 1 : -1) : 1;
-  const etfSign  = editEtfDelta  !== '' ? (parseFloat(editEtfDelta)  >= 0 ? 1 : -1) : 1;
-  const tsmcAbs  = editTsmcDelta !== '' ? Math.abs(parseFloat(editTsmcDelta)) : '';
-  const etfAbs   = editEtfDelta  !== '' ? Math.abs(parseFloat(editEtfDelta))  : '';
+  // 今日收盤價輸入框：編輯時帶入已存數值，新增時留空（佔位文字顯示昨日收盤）
+  const tsmcPriceValue = isEdit ? existing.tsmcPrice : '';
+  const etfPriceValue  = isEdit ? existing.etf0050Price : '';
+  const tsmcPlaceholder = prevTsmcPrice != null ? prevTsmcPrice.toFixed(2) : '0.00';
+  const etfPlaceholder  = prevEtfPrice  != null ? prevEtfPrice.toFixed(2)  : '0.00';
 
   const html = `
     <div class="form-section-header">日期</div>
@@ -876,22 +871,13 @@ function openAddModal(editDate = null) {
         <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
         <span class="form-input" style="color:var(--label-tertiary);">${prevTsmcDisp}</span>
       </div>
-      <div class="form-row" style="gap:8px;">
-        <span class="form-label">漲跌</span>
-        <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;">
-          <button id="tsmc-sign-btn" onclick="toggleSign('tsmc')" style="
-            min-width:40px;height:32px;border-radius:8px;border:none;cursor:pointer;
-            font-size:17px;font-weight:700;font-family:var(--font-system);
-            background:${tsmcSign === 1 ? 'rgba(255,59,48,0.12)' : 'rgba(52,199,89,0.12)'};
-            color:${tsmcSign === 1 ? 'var(--red)' : 'var(--green)'};
-            transition:all 0.15s;
-          ">${tsmcSign === 1 ? '＋' : '－'}</button>
-          <input class="form-input" type="number" id="f-tsmc-delta" value="${tsmcAbs}" placeholder="0" inputmode="decimal" step="0.1" oninput="updateModalPreview()" style="text-align:right;max-width:80px;">
-        </div>
+      <div class="form-row">
+        <span class="form-label">今日收盤</span>
+        <input class="form-input" type="number" id="f-tsmc-price" value="${tsmcPriceValue}" placeholder="${tsmcPlaceholder}" inputmode="decimal" step="0.1" oninput="updateModalPreview()" style="text-align:right;">
       </div>
       <div class="form-row">
-        <span class="form-label" style="color:var(--label-tertiary);">今日成交</span>
-        <span id="f-tsmc-today-display" style="font-size:17px;font-weight:700;color:var(--label-primary);text-align:right;flex:1;">—</span>
+        <span class="form-label" style="color:var(--label-tertiary);">漲跌</span>
+        <span id="f-tsmc-delta-display" style="font-size:17px;font-weight:700;color:var(--label-secondary);text-align:right;flex:1;">—</span>
       </div>
     </div>
 
@@ -901,22 +887,13 @@ function openAddModal(editDate = null) {
         <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
         <span class="form-input" style="color:var(--label-tertiary);">${prevEtfDisp}</span>
       </div>
-      <div class="form-row" style="gap:8px;">
-        <span class="form-label">漲跌</span>
-        <div style="display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end;">
-          <button id="etf-sign-btn" onclick="toggleSign('etf')" style="
-            min-width:40px;height:32px;border-radius:8px;border:none;cursor:pointer;
-            font-size:17px;font-weight:700;font-family:var(--font-system);
-            background:${etfSign === 1 ? 'rgba(255,59,48,0.12)' : 'rgba(52,199,89,0.12)'};
-            color:${etfSign === 1 ? 'var(--red)' : 'var(--green)'};
-            transition:all 0.15s;
-          ">${etfSign === 1 ? '＋' : '－'}</button>
-          <input class="form-input" type="number" id="f-etf-delta" value="${etfAbs}" placeholder="0" inputmode="decimal" step="0.01" oninput="updateModalPreview()" style="text-align:right;max-width:80px;">
-        </div>
+      <div class="form-row">
+        <span class="form-label">今日收盤</span>
+        <input class="form-input" type="number" id="f-etf-price" value="${etfPriceValue}" placeholder="${etfPlaceholder}" inputmode="decimal" step="0.01" oninput="updateModalPreview()" style="text-align:right;">
       </div>
       <div class="form-row">
-        <span class="form-label" style="color:var(--label-tertiary);">今日成交</span>
-        <span id="f-etf-today-display" style="font-size:17px;font-weight:700;color:var(--label-primary);text-align:right;flex:1;">—</span>
+        <span class="form-label" style="color:var(--label-tertiary);">漲跌</span>
+        <span id="f-etf-delta-display" style="font-size:17px;font-weight:700;color:var(--label-secondary);text-align:right;flex:1;">—</span>
       </div>
     </div>
 
@@ -948,23 +925,7 @@ function openAddModal(editDate = null) {
   document.getElementById('modal-body').dataset.tsmcShares = tsmcShares;
   document.getElementById('modal-body').dataset.etfShares  = etfShares;
   openModal('add-modal');
-  if (isEdit) updateModalPreview();
-}
-
-function toggleSign(id) {
-  const btn = document.getElementById(id + '-sign-btn');
-  const isPositive = btn.textContent.trim() === '＋';
-  btn.textContent = isPositive ? '－' : '＋';
-  btn.style.background = isPositive ? 'rgba(52,199,89,0.12)' : 'rgba(255,59,48,0.12)';
-  btn.style.color = isPositive ? 'var(--green)' : 'var(--red)';
   updateModalPreview();
-}
-
-function getSignedDelta(id) {
-  const btn = document.getElementById(id + '-sign-btn');
-  const sign = (btn && btn.textContent.trim() === '＋') ? 1 : -1;
-  const abs = parseFloat(document.getElementById('f-' + id + '-delta').value) || 0;
-  return sign * abs;
 }
 
 function updateModalPreview() {
@@ -974,17 +935,27 @@ function updateModalPreview() {
   const tsmcShares = parseFloat(body.dataset.tsmcShares) || 0;
   const etfShares  = parseFloat(body.dataset.etfShares)  || 0;
 
-  const tsmcDelta = getSignedDelta('tsmc');
-  const etfDelta  = getSignedDelta('etf');
+  const tsmcTyped = parseFloat(document.getElementById('f-tsmc-price').value);
+  const etfTyped  = parseFloat(document.getElementById('f-etf-price').value);
 
-  const tsmcPrice = Math.round((prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta) * 100) / 100;
-  const etfPrice  = Math.round((prevEtf  ? prevEtf  + etfDelta  : etfDelta)  * 100) / 100;
-  const tsmcDisp = document.getElementById('f-tsmc-today-display');
-  const etfDisp  = document.getElementById('f-etf-today-display');
-  tsmcDisp.textContent = tsmcPrice > 0 ? `$${tsmcPrice.toLocaleString('zh-TW',{minimumFractionDigits:1,maximumFractionDigits:2})}` : '—';
-  etfDisp.textContent  = etfPrice  > 0 ? `$${etfPrice.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '—';
+  const tsmcDeltaEl = document.getElementById('f-tsmc-delta-display');
+  const etfDeltaEl  = document.getElementById('f-etf-delta-display');
 
-  // Live preview
+  [[tsmcTyped, prevTsmc, tsmcDeltaEl], [etfTyped, prevEtf, etfDeltaEl]].forEach(([typed, prev, el]) => {
+    if (!isNaN(typed) && prev > 0) {
+      const d = Math.round((typed - prev) * 100) / 100;
+      el.textContent = d !== 0 ? (d > 0 ? '+' : '') + d.toFixed(2) : '±0.00';
+      el.style.color = d > 0 ? 'var(--red)' : d < 0 ? 'var(--green)' : 'var(--label-secondary)';
+    } else {
+      el.textContent = '—';
+      el.style.color = 'var(--label-secondary)';
+    }
+  });
+
+  // Live preview（未輸入的一邊暫以昨日收盤試算，僅供預覽，不影響儲存）
+  const tsmcPrice = !isNaN(tsmcTyped) && tsmcTyped > 0 ? tsmcTyped : prevTsmc;
+  const etfPrice  = !isNaN(etfTyped)  && etfTyped  > 0 ? etfTyped  : prevEtf;
+
   if (tsmcPrice <= 0 && etfPrice <= 0) {
     document.getElementById('lp-total').textContent = '—';
     document.getElementById('lp-diff').textContent  = '—';
@@ -1005,21 +976,19 @@ function updateModalPreview() {
 function saveRecord() {
   const date       = document.getElementById('f-date').value;
   const body       = document.getElementById('modal-body');
-  const prevTsmc   = parseFloat(body.dataset.prevTsmc) || 0;
-  const prevEtf    = parseFloat(body.dataset.prevEtf)  || 0;
   const tsmcShares = parseInt(body.dataset.tsmcShares) || 0;
   const etfShares  = parseInt(body.dataset.etfShares)  || 0;
-  const tsmcDelta  = getSignedDelta('tsmc');
-  const etfDelta   = getSignedDelta('etf');
+  const tsmcPriceRaw = parseFloat(document.getElementById('f-tsmc-price').value);
+  const etfPriceRaw  = parseFloat(document.getElementById('f-etf-price').value);
   const note       = document.getElementById('f-note').value.trim();
 
   if (!date) { showToast('請選擇日期'); return; }
-  if (tsmcDelta === 0 && etfDelta === 0 && !prevTsmc && !prevEtf) { showToast('請輸入漲跌值'); return; }
+  if (isNaN(tsmcPriceRaw) || isNaN(etfPriceRaw)) { showToast('請輸入今日收盤價'); return; }
 
-  const tsmcPrice = Math.round((prevTsmc ? prevTsmc + tsmcDelta : tsmcDelta) * 100) / 100;
-  const etfPrice  = Math.round((prevEtf  ? prevEtf  + etfDelta  : etfDelta)  * 100) / 100;
+  const tsmcPrice = Math.round(tsmcPriceRaw * 100) / 100;
+  const etfPrice  = Math.round(etfPriceRaw * 100) / 100;
 
-  if (tsmcPrice <= 0 || etfPrice <= 0) { showToast('計算後價格不合理，請確認漲跌值'); return; }
+  if (tsmcPrice <= 0 || etfPrice <= 0) { showToast('收盤價需大於 0'); return; }
   if (tsmcShares <= 0 || etfShares <= 0) { showToast('股數設定有誤，請至設定頁確認'); return; }
 
   const totalMarketValue = (tsmcShares * tsmcPrice) + (etfShares * etfPrice);
