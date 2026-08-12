@@ -398,7 +398,7 @@ function onPriceInput() {
 
   const tsmcValue = tsmcShares * tsmcPrice;
   const etfValue = etfShares * etfPrice;
-  const totalMV = Math.round((tsmcValue + etfValue) * 0.9965);
+  const totalMV = calcMarketValue({ tsmcShares, tsmcPrice, etf0050Shares: etfShares, etf0050Price: etfPrice });
 
   // Update market value displays
   const tvTsmc = document.getElementById('value-display-tsmc');
@@ -961,10 +961,10 @@ function updateModalPreview() {
     document.getElementById('lp-diff').textContent  = '—';
     return;
   }
-  const total = (tsmcShares * tsmcPrice) + (etfShares * etfPrice);
+  const total = calcMarketValue({ tsmcShares, tsmcPrice, etf0050Shares: etfShares, etf0050Price: etfPrice });
   document.getElementById('lp-total').textContent = fmtMoney(total);
 
-  const prevTotal = (tsmcShares * prevTsmc) + (etfShares * prevEtf);
+  const prevTotal = calcMarketValue({ tsmcShares, tsmcPrice: prevTsmc, etf0050Shares: etfShares, etf0050Price: prevEtf });
   if (prevTotal > 0) {
     const diff = total - prevTotal;
     const el = document.getElementById('lp-diff');
@@ -991,7 +991,7 @@ function saveRecord() {
   if (tsmcPrice <= 0 || etfPrice <= 0) { showToast('收盤價需大於 0'); return; }
   if (tsmcShares <= 0 || etfShares <= 0) { showToast('股數設定有誤，請至設定頁確認'); return; }
 
-  const totalMarketValue = (tsmcShares * tsmcPrice) + (etfShares * etfPrice);
+  const totalMarketValue = calcMarketValue({ tsmcShares, tsmcPrice, etf0050Shares: etfShares, etf0050Price: etfPrice });
   const record = {
     id: date,
     date,
