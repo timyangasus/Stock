@@ -859,7 +859,7 @@ function openAddModal(editDate = null) {
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
         <span class="form-label">日期</span>
-        <input class="form-input" type="date" id="f-date" value="${defaultDate}" max="${today}" style="text-align:right;">
+        <input class="form-input" type="date" id="f-date" value="${defaultDate}" max="${today}" style="text-align:right;" onclick="this.showPicker?.()">
       </div>
     </div>
 
