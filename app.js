@@ -227,6 +227,9 @@ function renderHome() {
     ${todayRecorded ? '✓ 今日已記錄' : '• 今日未記錄'}
   </span>`;
 
+  // 今日未記錄時，刪除鈕為停用狀態
+  document.getElementById('clear-today-btn').disabled = !todayRecorded;
+
   // Empty state
   const hasData = enriched.length > 0;
 

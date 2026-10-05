@@ -123,6 +123,11 @@ body {
   font-family: var(--font-system);
 }
 
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .nav-btn.icon-btn {
   font-size: 26px;
   font-weight: 300;
