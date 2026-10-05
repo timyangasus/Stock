@@ -647,7 +647,9 @@ function renderHistoryGrouped(enriched, wrapper) {
     }, 0);
 
 
-    g.records.forEach(rec => {
+    if (historyPeriod === 'month') {
+      html += buildMonthWeekRows(g.records, enriched);
+    } else g.records.forEach(rec => {
       const dcls = profitClass(rec.dailyProfit);
       html += `
         <div class="list-row" onclick="showDetail('${rec.date}')" style="padding-left:20px;min-height:54px;border-top:0.5px solid var(--separator);">
@@ -677,6 +679,46 @@ function renderHistoryGrouped(enriched, wrapper) {
       headerRow.style.borderRadius = 'var(--radius-card) var(--radius-card) 0 0';
     }
   });
+}
+
+// 月份群組內改以「週」列出：週切在月份邊界內（例如 9/29–10/5 在 10 月只算 10/1–10/5），
+// 每週損益 = 該週最後一筆市值 − 該週第一筆之前那一筆的市值，各週加總即等於當月損益
+function buildMonthWeekRows(monthRecords, allNewestFirst) {
+  const weeks = {};
+  monthRecords.forEach(rec => {
+    const k = weekKey(rec.date);
+    (weeks[k] = weeks[k] || []).push(rec); // 新到舊
+  });
+  let html = '';
+  Object.keys(weeks).sort((a, b) => b.localeCompare(a)).forEach(k => {
+    const recs = weeks[k];
+    const latest = recs[0];
+    const earliest = recs[recs.length - 1];
+    const prev = allNewestFirst[allNewestFirst.indexOf(earliest) + 1];
+    const profit = prev ? latest.totalMarketValue - prev.totalMarketValue : 0;
+
+    // 週標籤：週一～週日，裁切在當月範圍內
+    const mon = new Date(k + 'T00:00:00');
+    const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+    const m = new Date(latest.date + 'T00:00:00').getMonth();
+    const start = mon.getMonth() === m ? mon : new Date(sun.getFullYear(), m, 1);
+    const end = sun.getMonth() === m ? sun : new Date(mon.getFullYear(), m + 1, 0);
+    const label = `${start.getMonth() + 1}/${start.getDate()} – ${end.getMonth() + 1}/${end.getDate()}`;
+
+    html += `
+      <div class="list-row" onclick="showDetail('${latest.date}')" style="padding-left:20px;min-height:54px;border-top:0.5px solid var(--separator);">
+        <div class="list-row-content">
+          <div style="font-size:19px;font-weight:700;letter-spacing:-0.224px;">${label}</div>
+          <div style="font-size:12px;color:var(--label-tertiary);margin-top:2px;">${recs.length} 筆紀錄 · ${fmtMoney(latest.totalMarketValue)}</div>
+        </div>
+        <div class="list-row-right">
+          <span class="profit-badge ${profitClass(profit)}" style="font-size:13px;">${fmtProfit(profit)}</span>
+        </div>
+        <span class="list-row-chevron">›</span>
+      </div>
+    `;
+  });
+  return html;
 }
 
 function toggleGroup(safeKey) {
