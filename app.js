@@ -915,8 +915,8 @@ function openAddModal(editDate = null) {
     <div class="form-section-header">台積電 (2330)　股數 ${tsmcShares.toLocaleString()}</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
-        <span class="form-label">今日收盤</span>
-        <input class="form-input" type="number" id="f-tsmc-price" value="${tsmcPriceValue}" inputmode="decimal" step="0.1" oninput="updateModalPreview()" style="text-align:right;">
+        <span class="form-label" style="font-weight:700;">今日收盤</span>
+        <input class="form-input" type="number" id="f-tsmc-price" placeholder="收盤價" value="${tsmcPriceValue}" inputmode="decimal" step="0.1" oninput="updateModalPreview()" style="text-align:right;">
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
@@ -931,8 +931,8 @@ function openAddModal(editDate = null) {
     <div class="form-section-header">元大台灣50 (0050)　股數 ${etfShares.toLocaleString()}</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
-        <span class="form-label">今日收盤</span>
-        <input class="form-input" type="number" id="f-etf-price" value="${etfPriceValue}" inputmode="decimal" step="0.01" oninput="updateModalPreview()" style="text-align:right;">
+        <span class="form-label" style="font-weight:700;">今日收盤</span>
+        <input class="form-input" type="number" id="f-etf-price" placeholder="收盤價" value="${etfPriceValue}" inputmode="decimal" step="0.01" oninput="updateModalPreview()" style="text-align:right;">
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
