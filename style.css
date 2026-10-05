@@ -87,7 +87,9 @@ body {
 /* ===================== NAVIGATION BAR ===================== */
 .nav-bar {
   flex: none;
-  position: relative;
+  /* 保持 sticky：iOS 26+ Safari 偵測到頂端的 fixed/sticky 導覽列時，才不會在頂端套用模糊效果 */
+  position: sticky;
+  top: 0;
   z-index: 100;
   /* 不用 backdrop-filter：iOS 27 會連同標題文字一起模糊 */
   background: var(--bg-primary);
