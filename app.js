@@ -223,9 +223,8 @@ function renderHome() {
   // Recorded badge
   const badgeEl = document.getElementById('home-recorded-badge');
   const todayRecorded = records.some(r => r.date === today);
-  badgeEl.innerHTML = `<span class="status-badge ${todayRecorded ? 'recorded' : 'not-recorded'}">
-    ${todayRecorded ? '✓ 今日已記錄' : '• 今日未記錄'}
-  </span>`;
+  // 今日已記錄時不顯示標籤，只在未記錄時提示
+  badgeEl.innerHTML = todayRecorded ? '' : `<span class="status-badge not-recorded">• 今日未記錄</span>`;
 
   // 今日未記錄時，刪除鈕為停用狀態
   document.getElementById('clear-today-btn').disabled = !todayRecorded;
@@ -1055,7 +1054,6 @@ function saveRecord() {
   }
   saveRecords(records);
   closeAddModal();
-  showToast(editingDate ? '紀錄已更新 ✓' : '紀錄已儲存 ✓');
   haptic('medium');
 
   // Refresh current tab
