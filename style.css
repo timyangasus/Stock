@@ -65,22 +65,29 @@ body {
 .page {
   position: absolute;
   inset: 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   display: none;
   flex-direction: column;
+}
+
+/* 導覽列在捲動區外，滑動時標題固定顯示 */
+.page-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding-bottom: calc(var(--tab-height) + 16px);
 }
 
 .page.active { display: flex; }
 
 /* iOS scroll behavior */
-.page::-webkit-scrollbar { display: none; }
+.page-scroll::-webkit-scrollbar { display: none; }
 
 /* ===================== NAVIGATION BAR ===================== */
 .nav-bar {
-  position: sticky;
-  top: 0;
+  flex: none;
+  position: relative;
   z-index: 100;
   /* 不用 backdrop-filter：iOS 27 會連同標題文字一起模糊 */
   background: var(--bg-primary);
