@@ -82,9 +82,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(245,245,247,0.88);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  /* 不用 backdrop-filter：iOS 27 會連同標題文字一起模糊 */
+  background: var(--bg-primary);
   padding-top: var(--safe-top);
   border-bottom: 0.5px solid var(--separator);
 }
@@ -104,8 +103,10 @@ body {
   letter-spacing: -0.374px;
   color: var(--label-primary);
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
   font-family: var(--font-system);
 }
 
