@@ -644,6 +644,7 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 
 .form-input::placeholder { color: var(--label-quaternary); }
+.form-input[type="date"]::-webkit-date-and-time-value { text-align: right; }
 
 .form-input-full {
   width: 100%;
@@ -819,8 +820,11 @@ canvas { display: block; width: 100%; height: 100%; }
   padding: 6px 0;
 }
 
-.live-preview-label { font-size: 14px; letter-spacing: -0.224px; color: var(--label-secondary); }
-.live-preview-value { font-size: 16px; font-weight: 600; letter-spacing: -0.374px; }
+.live-preview-label { font-size: 17px; letter-spacing: -0.374px; color: var(--label-secondary); }
+.live-preview-value { font-size: 20px; font-weight: 600; letter-spacing: -0.45px; }
+.live-preview-value.positive { color: var(--red); }
+.live-preview-value.negative { color: var(--green); }
+.live-preview-value.neutral  { color: var(--label-secondary); }
 
 /* ===================== EMPTY STATE ===================== */
 .empty-state {

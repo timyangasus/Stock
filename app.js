@@ -845,7 +845,6 @@ function openAddModal(editDate = null) {
   const tsmcShares    = isEdit ? existing.tsmcShares : settings.tsmcShares;
   const etfShares     = isEdit ? existing.etf0050Shares : settings.etf0050Shares;
 
-  const defaultNote   = isEdit ? (existing.note || '') : '';
   const defaultDate   = isEdit ? existing.date : today;
 
   const prevTsmcDisp = prevTsmcPrice != null ? `$${prevTsmcPrice.toLocaleString('zh-TW',{minimumFractionDigits:1,maximumFractionDigits:2})}` : '—';
@@ -860,7 +859,7 @@ function openAddModal(editDate = null) {
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
         <span class="form-label">日期</span>
-        <input class="form-input" type="date" id="f-date" value="${defaultDate}" max="${today}">
+        <input class="form-input" type="date" id="f-date" value="${defaultDate}" max="${today}" style="text-align:right;">
       </div>
     </div>
 
@@ -872,7 +871,7 @@ function openAddModal(editDate = null) {
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
-        <span class="form-input" style="color:var(--label-tertiary);">${prevTsmcDisp}</span>
+        <span class="form-input" style="color:var(--label-tertiary);font-weight:400;">${prevTsmcDisp}</span>
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">漲跌</span>
@@ -888,7 +887,7 @@ function openAddModal(editDate = null) {
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
-        <span class="form-input" style="color:var(--label-tertiary);">${prevEtfDisp}</span>
+        <span class="form-input" style="color:var(--label-tertiary);font-weight:400;">${prevEtfDisp}</span>
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">漲跌</span>
@@ -896,21 +895,16 @@ function openAddModal(editDate = null) {
       </div>
     </div>
 
-    <div class="form-section-header">備註</div>
-    <div class="form-group" style="margin:0 16px;">
-      <textarea class="form-input-full" id="f-note" placeholder="選填">${defaultNote}</textarea>
-    </div>
-
     <div style="margin:16px 0 8px;">
       <div class="live-preview" id="live-preview">
         <div class="live-preview-title">即時試算</div>
         <div class="live-preview-row">
-          <span class="live-preview-label">今日總市值</span>
-          <span class="live-preview-value" id="lp-total">—</span>
-        </div>
-        <div class="live-preview-row">
           <span class="live-preview-label">今日損益</span>
           <span class="live-preview-value" id="lp-diff">—</span>
+        </div>
+        <div class="live-preview-row">
+          <span class="live-preview-label">今日總市值</span>
+          <span class="live-preview-value" id="lp-total">—</span>
         </div>
       </div>
     </div>
@@ -958,6 +952,7 @@ function updateModalPreview() {
   if (tsmcPrice <= 0 && etfPrice <= 0) {
     document.getElementById('lp-total').textContent = '—';
     document.getElementById('lp-diff').textContent  = '—';
+    document.getElementById('lp-diff').className    = 'live-preview-value';
     return;
   }
   const total = calcMarketValue({ tsmcShares, tsmcPrice, etf0050Shares: etfShares, etf0050Price: etfPrice });
@@ -979,7 +974,6 @@ function saveRecord() {
   const etfShares  = parseInt(body.dataset.etfShares)  || 0;
   const tsmcPriceRaw = parseFloat(document.getElementById('f-tsmc-price').value);
   const etfPriceRaw  = parseFloat(document.getElementById('f-etf-price').value);
-  const note       = document.getElementById('f-note').value.trim();
 
   if (!date) { showToast('請選擇日期'); return; }
   if (isNaN(tsmcPriceRaw) || isNaN(etfPriceRaw)) { showToast('請輸入今日收盤價'); return; }
@@ -998,12 +992,12 @@ function saveRecord() {
     tsmcPrice,
     etf0050Shares: etfShares,
     etf0050Price: etfPrice,
-    totalMarketValue,
-    note
+    totalMarketValue
   };
 
   let records = loadRecords();
   const existing = records.findIndex(r => r.date === date);
+  if (existing >= 0 && records[existing].note) record.note = records[existing].note;
   if (existing >= 0) {
     records[existing] = record;
   } else {
