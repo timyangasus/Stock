@@ -851,11 +851,9 @@ function openAddModal(editDate = null) {
   const prevTsmcDisp = prevTsmcPrice != null ? `$${prevTsmcPrice.toLocaleString('zh-TW',{minimumFractionDigits:1,maximumFractionDigits:2})}` : '—';
   const prevEtfDisp  = prevEtfPrice  != null ? `$${prevEtfPrice.toLocaleString('zh-TW',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '—';
 
-  // 今日收盤價輸入框：編輯時帶入已存數值，新增時留空（佔位文字顯示昨日收盤）
+  // 今日收盤價輸入框：編輯時帶入已存數值，新增時完全留空
   const tsmcPriceValue = isEdit ? existing.tsmcPrice : '';
   const etfPriceValue  = isEdit ? existing.etf0050Price : '';
-  const tsmcPlaceholder = prevTsmcPrice != null ? prevTsmcPrice.toFixed(2) : '0.00';
-  const etfPlaceholder  = prevEtfPrice  != null ? prevEtfPrice.toFixed(2)  : '0.00';
 
   const html = `
     <div class="form-section-header">日期</div>
@@ -869,12 +867,12 @@ function openAddModal(editDate = null) {
     <div class="form-section-header">台積電 (2330)　股數 ${tsmcShares.toLocaleString()}</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
-        <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
-        <span class="form-input" style="color:var(--label-tertiary);">${prevTsmcDisp}</span>
+        <span class="form-label">今日收盤</span>
+        <input class="form-input" type="number" id="f-tsmc-price" value="${tsmcPriceValue}" inputmode="decimal" step="0.1" oninput="updateModalPreview()" style="text-align:right;">
       </div>
       <div class="form-row">
-        <span class="form-label">今日收盤</span>
-        <input class="form-input" type="number" id="f-tsmc-price" value="${tsmcPriceValue}" placeholder="${tsmcPlaceholder}" inputmode="decimal" step="0.1" oninput="updateModalPreview()" style="text-align:right;">
+        <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
+        <span class="form-input" style="color:var(--label-tertiary);">${prevTsmcDisp}</span>
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">漲跌</span>
@@ -885,12 +883,12 @@ function openAddModal(editDate = null) {
     <div class="form-section-header">元大台灣50 (0050)　股數 ${etfShares.toLocaleString()}</div>
     <div class="form-group" style="margin:0 16px;">
       <div class="form-row">
-        <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
-        <span class="form-input" style="color:var(--label-tertiary);">${prevEtfDisp}</span>
+        <span class="form-label">今日收盤</span>
+        <input class="form-input" type="number" id="f-etf-price" value="${etfPriceValue}" inputmode="decimal" step="0.01" oninput="updateModalPreview()" style="text-align:right;">
       </div>
       <div class="form-row">
-        <span class="form-label">今日收盤</span>
-        <input class="form-input" type="number" id="f-etf-price" value="${etfPriceValue}" placeholder="${etfPlaceholder}" inputmode="decimal" step="0.01" oninput="updateModalPreview()" style="text-align:right;">
+        <span class="form-label" style="color:var(--label-tertiary);">昨日收盤</span>
+        <span class="form-input" style="color:var(--label-tertiary);">${prevEtfDisp}</span>
       </div>
       <div class="form-row">
         <span class="form-label" style="color:var(--label-tertiary);">漲跌</span>
