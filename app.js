@@ -1179,7 +1179,6 @@ function clearTodayRecord() {
     const updated = records.filter(r => r.date !== today);
     saveRecords(updated);
     renderHome();
-    showToast('今日資料已清除');
     haptic('heavy');
   };
   document.getElementById('confirm-title').textContent = '清除今日資料';
