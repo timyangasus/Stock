@@ -648,7 +648,9 @@ function renderHistoryGrouped(enriched, wrapper) {
 
 
     if (historyPeriod === 'month') {
-      html += buildMonthWeekRows(g.records, enriched);
+      html += buildSubPeriodRows(g.records, enriched, weekKey, monthWeekLabel);
+    } else if (historyPeriod === 'year') {
+      html += buildSubPeriodRows(g.records, enriched, monthKey, latest => `${new Date(latest.date + 'T00:00:00').getMonth() + 1}月`);
     } else g.records.forEach(rec => {
       const dcls = profitClass(rec.dailyProfit);
       html += `
@@ -681,29 +683,32 @@ function renderHistoryGrouped(enriched, wrapper) {
   });
 }
 
-// 月份群組內改以「週」列出：週切在月份邊界內（例如 9/29–10/5 在 10 月只算 10/1–10/5），
-// 每週損益 = 該週最後一筆市值 − 該週第一筆之前那一筆的市值，各週加總即等於當月損益
-function buildMonthWeekRows(monthRecords, allNewestFirst) {
-  const weeks = {};
-  monthRecords.forEach(rec => {
-    const k = weekKey(rec.date);
-    (weeks[k] = weeks[k] || []).push(rec); // 新到舊
+// 週標籤：週一～週日，裁切在該筆所屬月份內（例如 9/28–10/4 在 10 月顯示 10/1–10/4）
+function monthWeekLabel(latest) {
+  const mon = new Date(weekKey(latest.date) + 'T00:00:00');
+  const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+  const m = new Date(latest.date + 'T00:00:00').getMonth();
+  const start = mon.getMonth() === m ? mon : new Date(sun.getFullYear(), m, 1);
+  const end = sun.getMonth() === m ? sun : new Date(mon.getFullYear(), m + 1, 0);
+  return `${start.getMonth() + 1}/${start.getDate()} – ${end.getMonth() + 1}/${end.getDate()}`;
+}
+
+// 群組內改以子期間列出（月 → 週、年 → 月）
+// 子期間損益 = 該段最後一筆市值 − 該段第一筆之前那一筆的市值，各段加總即等於整個群組的損益
+function buildSubPeriodRows(groupRecords, allNewestFirst, getSubKey, getSubLabel) {
+  const subs = {};
+  groupRecords.forEach(rec => {
+    const k = getSubKey(rec.date);
+    (subs[k] = subs[k] || []).push(rec); // 新到舊
   });
   let html = '';
-  Object.keys(weeks).sort((a, b) => b.localeCompare(a)).forEach(k => {
-    const recs = weeks[k];
+  Object.keys(subs).sort((a, b) => b.localeCompare(a)).forEach(k => {
+    const recs = subs[k];
     const latest = recs[0];
     const earliest = recs[recs.length - 1];
     const prev = allNewestFirst[allNewestFirst.indexOf(earliest) + 1];
     const profit = prev ? latest.totalMarketValue - prev.totalMarketValue : 0;
-
-    // 週標籤：週一～週日，裁切在當月範圍內
-    const mon = new Date(k + 'T00:00:00');
-    const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
-    const m = new Date(latest.date + 'T00:00:00').getMonth();
-    const start = mon.getMonth() === m ? mon : new Date(sun.getFullYear(), m, 1);
-    const end = sun.getMonth() === m ? sun : new Date(mon.getFullYear(), m + 1, 0);
-    const label = `${start.getMonth() + 1}/${start.getDate()} – ${end.getMonth() + 1}/${end.getDate()}`;
+    const label = getSubLabel(latest);
 
     html += `
       <div class="list-row" onclick="showDetail('${latest.date}')" style="padding-left:20px;min-height:54px;border-top:0.5px solid var(--separator);">
