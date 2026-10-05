@@ -620,6 +620,15 @@ canvas { display: block; width: 100%; height: 100%; }
 
 .form-row:last-child { border-bottom: none; }
 
+/* 欄位右側的值（輸入框 / 文字）一律靠右，且右緣對齊（清掉 Safari 輸入框預設內距） */
+.form-row > :not(.form-label) {
+  flex: 1;
+  min-width: 0;
+  margin: 0 0 0 auto;
+  padding: 0;
+  text-align: right;
+}
+
 .form-label {
   font-size: 15px;
   letter-spacing: -0.224px;
@@ -644,7 +653,7 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 
 .form-input::placeholder { color: var(--label-quaternary); }
-.form-input[type="date"]::-webkit-date-and-time-value { text-align: right; }
+.form-input[type="date"]::-webkit-date-and-time-value { text-align: right; margin: 0; }
 .form-input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
 
 .form-input-full {
